@@ -1,0 +1,111 @@
+/**
+ * Type definitions for all content data
+ * Used by both Landing Page and Admin Page
+ * 
+ * When integrating with admin:
+ * 1. Keep these types as source of truth
+ * 2. API responses should match these interfaces
+ * 3. Form validations should validate against these types
+ */
+
+// ============================================
+// AGENDA / KEGIATAN
+// ============================================
+export type AgendaCategory = "kajian" | "sholat" | "kegiatan" | "rapat";
+
+export interface AgendaItem {
+  id: string;
+  title: string;
+  date: string; // ISO date: YYYY-MM-DD
+  time: string; // e.g., "18:30 WIB"
+  location: string;
+  description: string;
+  category: AgendaCategory;
+}
+
+// ============================================
+// ARTIKEL
+// ============================================
+export interface Article {
+  id: string;
+  title: string;
+  excerpt: string; // Short summary for cards
+  content: string; // Full article content (HTML/Markdown)
+  author: string;
+  date: string; // ISO date: YYYY-MM-DD
+  image: string; // Cover image URL
+  category: string; // Free-form category
+}
+
+// ============================================
+// GALERI
+// ============================================
+export interface GalleryItem {
+  id: string;
+  image: string; // Image URL
+  title: string; // Caption
+  date: string; // ISO date: YYYY-MM-DD
+}
+
+// ============================================
+// PENGURUS DKM
+// ============================================
+export interface ManagementMember {
+  id: string;
+  name: string;
+  title: string; // Position/role
+  image: string; // Profile photo URL
+}
+
+// ============================================
+// SOSIAL MEDIA
+// ============================================
+export type SocialPlatform = "instagram" | "youtube" | "facebook" | "tiktok";
+
+export interface SocialLink {
+  platform: SocialPlatform;
+  url: string;
+}
+
+// ============================================
+// KONTAK
+// ============================================
+export interface ContactInfo {
+  address: string;
+  phone: string;
+  email: string;
+  mapsUrl: string;
+}
+
+// ============================================
+// DONASI
+// ============================================
+export interface DonationConfig {
+  bankAccountNumber: string;
+  bankAccountName: string;
+  bankName: string;
+  donationCollected: number;
+  donationTarget: number;
+  qrisImagePath: string;
+  qrisDownloadFilename: string;
+}
+
+// ============================================
+// EVENT COUNTDOWN
+// ============================================
+export interface CountdownEvent {
+  name: string;
+  date: string; // ISO datetime
+  description?: string;
+}
+
+// ============================================
+// SITE CONFIG (for future use)
+// ============================================
+export interface SiteConfig {
+  siteName: string;
+  tagline: string;
+  logoPath: string;
+  primaryColor: string;
+  accentColor: string;
+}

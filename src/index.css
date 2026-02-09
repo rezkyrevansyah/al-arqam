@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import "tailwindcss";
+
+/* CSS Variables */
+:root {
+  --background: 40 20% 97%;
+  --foreground: 160 30% 8%;
+  --card: 40 25% 98%;
+  --card-foreground: 160 30% 8%;
+  --popover: 40 25% 98%;
+  --popover-foreground: 160 30% 8%;
+  --primary: 160 45% 22%;
+  --primary-foreground: 40 20% 97%;
+  --secondary: 40 30% 92%;
+  --secondary-foreground: 160 30% 15%;
+  --muted: 40 15% 93%;
+  --muted-foreground: 160 10% 45%;
+  --accent: 38 70% 55%;
+  --accent-foreground: 160 30% 8%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 40 15% 88%;
+  --input: 40 15% 88%;
+  --ring: 160 45% 22%;
+  --radius: 0.625rem;
+  --emerald: 160 45% 22%;
+  --emerald-light: 160 35% 35%;
+  --gold: 38 70% 55%;
+  --gold-light: 38 60% 72%;
+  --cream: 40 30% 95%;
+  --cream-dark: 40 20% 88%;
+  --sand: 35 25% 82%;
+}
+
+/* Tailwind Theme Extensions */
+@theme {
+  --font-display: 'Playfair Display', serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-arabic: 'Amiri', serif;
+}
+
+/* Base Styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f6f4ee;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a7864;
+  border-radius: 3px;
+}
+
+/* Islamic Pattern Background */
+.islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23c9b97a' stroke-width='0.5' opacity='0.2'%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40Z'/%3E%3Cpath d='M40 10 L70 40 L40 70 L10 40Z'/%3E%3Cpath d='M40 20 L60 40 L40 60 L20 40Z'/%3E%3Cpath d='M0 0 L40 40 L0 80'/%3E%3Cpath d='M80 0 L40 40 L80 80'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+}
+
+/* Hero Gradient */
+.hero-gradient {
+  background: 
+    radial-gradient(at 20%, hsl(160 45% 22% / 0.07) 0%, transparent 50%),
+    radial-gradient(at 80% 20%, hsl(38 70% 55% / 0.05) 0%, transparent 50%),
+    radial-gradient(at 50% 80%, hsl(160 45% 22% / 0.04) 0%, transparent 50%);
+}
+
+/* Section Ornament */
+.section-ornament {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-ornament::before,
+.section-ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(38 70% 55% / 0.4), transparent);
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+  100% {
+    transform: translate(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.marquee-paused {
+  animation-play-state: paused !important;
+}
+
+/* Gold Shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200%;
+  }
+  100% {
+    background-position: 200%;
+  }
+}
+
+.gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(38 70% 55%) 0%,
+    hsl(38 60% 72%) 25%,
+    hsl(38 70% 55%) 50%,
+    hsl(38 60% 72%) 75%,
+    hsl(38 70% 55%) 100%
+  );
+  background-size: 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Float Animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Font Utility Classes */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-arabic {
+  font-family: 'Amiri', serif;
+}
+
+/* Color Utility Classes */
+.bg-background { background-color: hsl(var(--background)); }
+.bg-card { background-color: hsl(var(--card)); }
+.bg-primary { background-color: hsl(var(--primary)); }
+.bg-muted { background-color: hsl(var(--muted)); }
+
+.text-foreground { color: hsl(var(--foreground)); }
+.text-primary { color: hsl(var(--primary)); }
+.text-primary-foreground { color: hsl(var(--primary-foreground)); }
+.text-muted-foreground { color: hsl(var(--muted-foreground)); }
+
+.border-border { border-color: hsl(var(--border)); }
+.border-primary { border-color: hsl(var(--primary)); }
