@@ -4,9 +4,45 @@ import { Pause, Play, Users } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatGoogleDriveUrl } from '../lib/utils';
 
+function PengurusSkeleton() {
+  return (
+    <section id="tentang" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--primary))]/[0.02] to-transparent overflow-hidden">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <div className="skeleton h-4 w-40 mx-auto mb-4" />
+          <div className="skeleton h-12 w-52 mx-auto mb-4" />
+          <div className="skeleton h-4 w-96 max-w-full mx-auto" />
+        </div>
+        <div className="flex items-center justify-center gap-3 mb-10">
+          <div className="skeleton h-10 w-36 rounded-xl" />
+          <div className="skeleton h-10 w-32 rounded-xl" />
+        </div>
+      </div>
+      <div className="overflow-hidden">
+        <div className="flex gap-6 px-6">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex-shrink-0 w-60">
+              <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl overflow-hidden">
+                <div className="skeleton h-64 w-full rounded-none" />
+                <div className="p-5 text-center">
+                  <div className="skeleton h-5 w-32 mx-auto mb-2" />
+                  <div className="skeleton h-4 w-24 mx-auto" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Pengurus() {
   const { data } = useSiteData();
-  const managementData = data?.board || [];
+
+  if (!data) return <PengurusSkeleton />;
+
+  const managementData = data.board || [];
 
   const [isPaused, setIsPaused] = useState(false);
   const duplicatedMembers = [...managementData, ...managementData];

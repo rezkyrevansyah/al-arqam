@@ -155,6 +155,28 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
+/* Skeleton Loading Animation */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+.skeleton {
+  background-color: hsl(var(--muted-foreground));
+  border-radius: 0.5rem;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
+.skeleton-light {
+  background-color: hsl(var(--primary-foreground));
+  border-radius: 0.5rem;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
 /* Font Utility Classes */
 .font-display {
   font-family: 'Playfair Display', serif;

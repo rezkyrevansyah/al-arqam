@@ -64,13 +64,42 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
   );
 }
 
+function CountdownSkeleton() {
+  return (
+    <section className="relative py-16 md:py-20 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--background))] via-[hsl(var(--primary))]/[0.02] to-[hsl(var(--background))]" />
+      <div className="relative max-w-4xl mx-auto px-6 text-center">
+        <div className="skeleton h-8 w-52 mx-auto rounded-full mb-6" />
+        <div className="skeleton h-10 md:h-12 w-80 max-w-full mx-auto mb-3" />
+        <div className="skeleton h-4 w-[28rem] max-w-full mx-auto mb-10" />
+        <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-6">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-2 sm:gap-3 md:gap-6">
+              <div className="flex flex-col items-center">
+                <div className="skeleton w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl sm:rounded-2xl" />
+                <div className="skeleton h-3 w-10 mt-2" />
+              </div>
+              {i < 3 && (
+                <div className="text-[hsl(var(--primary))]/10 font-display text-lg sm:text-xl md:text-2xl mt-[-1.5rem]">:</div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="skeleton h-4 w-48 mx-auto mt-8" />
+      </div>
+    </section>
+  );
+}
+
 export function Countdown() {
   const { data } = useSiteData();
 
-  const countdownDate = data?.countdown?.date || '2026-02-26T00:00:00';
-  const countdownName = data?.countdown?.name || "Isra Mi'raj Nabi Muhammad SAW";
-  const countdownDescription = data?.countdown?.description || 'Memperingati perjalanan agung Rasulullah SAW dari Masjidil Haram ke Masjidil Aqsa dan naik ke Sidratul Muntaha';
-  const countdownActive = data?.countdown?.active !== false; // Default to true
+  if (!data) return <CountdownSkeleton />;
+
+  const countdownDate = data.countdown?.date || '2026-02-26T00:00:00';
+  const countdownName = data.countdown?.name || "Isra Mi'raj Nabi Muhammad SAW";
+  const countdownDescription = data.countdown?.description || 'Memperingati perjalanan agung Rasulullah SAW dari Masjidil Haram ke Masjidil Aqsa dan naik ke Sidratul Muntaha';
+  const countdownActive = data.countdown?.active !== false;
 
   const timeLeft = useCountdown(countdownDate);
 

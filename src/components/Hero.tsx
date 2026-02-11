@@ -2,12 +2,34 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 
+function HeroSkeleton() {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 islamic-pattern" />
+      <div className="absolute inset-0 hero-gradient" />
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+        <div className="skeleton h-8 w-64 mx-auto mb-8" />
+        <div className="skeleton h-16 md:h-20 w-[80%] mx-auto mb-4" />
+        <div className="mx-auto mt-8 mb-6 h-[2px] w-32 bg-gradient-to-r from-transparent via-[hsl(var(--gold))] to-transparent" />
+        <div className="skeleton h-7 w-72 mx-auto mb-6" />
+        <div className="skeleton h-5 w-96 max-w-full mx-auto mb-10" />
+        <div className="flex items-center justify-center gap-4">
+          <div className="skeleton h-12 w-48 rounded-2xl" />
+          <div className="skeleton h-12 w-40 rounded-2xl" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Hero() {
   const { data } = useSiteData();
 
-  const title = data?.hero?.title || "Masjid Jami' Al-Arqom";
-  const subtitle = data?.hero?.subtitle || 'Memakmurkan Masjid, Membangun Umat';
-  const description = data?.hero?.description || 'Pusat kegiatan ibadah dan dakwah di Bekasi Utara. Bersama kita tingkatkan kualitas iman dan ketaqwaan.';
+  if (!data) return <HeroSkeleton />;
+
+  const title = data.hero?.title || "Masjid Jami' Al-Arqom";
+  const subtitle = data.hero?.subtitle || 'Memakmurkan Masjid, Membangun Umat';
+  const description = data.hero?.description || 'Pusat kegiatan ibadah dan dakwah di Bekasi Utara. Bersama kita tingkatkan kualitas iman dan ketaqwaan.';
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);

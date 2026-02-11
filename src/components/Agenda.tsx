@@ -11,9 +11,45 @@ const CATEGORY_STYLES: Record<AgendaCategory, string> = {
   rapat: 'bg-violet-50 text-violet-700 border-violet-200',
 };
 
+function AgendaSkeleton() {
+  return (
+    <section id="agenda" className="relative py-24 md:py-32">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <div className="skeleton h-4 w-36 mx-auto mb-4" />
+          <div className="skeleton h-12 w-64 mx-auto mb-4" />
+          <div className="skeleton h-4 w-80 max-w-full mx-auto" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="skeleton w-14 h-14 rounded-xl" />
+                <div className="flex-1">
+                  <div className="skeleton h-5 w-3/4 mb-2" />
+                  <div className="skeleton h-4 w-16 rounded-full" />
+                </div>
+              </div>
+              <div className="skeleton h-4 w-full mb-2" />
+              <div className="skeleton h-4 w-2/3 mb-4" />
+              <div className="flex items-center gap-4">
+                <div className="skeleton h-3 w-20" />
+                <div className="skeleton h-3 w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Agenda() {
   const { data } = useSiteData();
-  const agendaData = data?.agenda || [];
+
+  if (!data) return <AgendaSkeleton />;
+
+  const agendaData = data.agenda || [];
 
   // Filter upcoming agendas (today or future)
   const upcomingAgendas = agendaData.filter(item => {

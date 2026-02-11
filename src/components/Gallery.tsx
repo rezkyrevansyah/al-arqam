@@ -5,9 +5,34 @@ import { X, ChevronLeft, ChevronRight, ZoomIn, ArrowRight } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatGoogleDriveUrl } from '../lib/utils';
 
+function GallerySkeleton() {
+  return (
+    <section id="galeri" className="relative py-24 md:py-32">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <div className="skeleton h-4 w-32 mx-auto mb-4" />
+          <div className="skeleton h-12 w-56 mx-auto mb-4" />
+          <div className="skeleton h-4 w-80 max-w-full mx-auto" />
+        </div>
+        {/* Featured skeleton */}
+        <div className="skeleton w-full aspect-[21/9] sm:aspect-[3/1] rounded-xl sm:rounded-2xl mb-6 sm:mb-8" />
+        {/* Grid skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="skeleton aspect-square rounded-xl sm:rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Gallery() {
   const { data } = useSiteData();
-  const galleryData = data?.gallery || [];
+
+  if (!data) return <GallerySkeleton />;
+
+  const galleryData = data.gallery || [];
 
   // Only show first 8 photos on landing page
   const landingGallery = galleryData.slice(0, 8);

@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
-import { 
-  MapPin, 
-  Phone, 
-  Mail, 
-  ExternalLink, 
-  Instagram, 
-  Youtube, 
-  Facebook 
+import {
+  MapPin,
+  Phone,
+  Mail,
+  ExternalLink,
+  Instagram,
+  Youtube,
+  Facebook
 } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import type { SocialPlatform } from '../data/types';
@@ -28,11 +28,67 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 const NAV_MENU = ['Agenda', 'Artikel', 'Galeri', 'Tentang', 'Donasi'];
 
+function FooterSkeleton() {
+  const year = new Date().getFullYear();
+  return (
+    <footer className="relative bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] overflow-hidden">
+      <div className="absolute inset-0 islamic-pattern opacity-[0.05]" />
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-16 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="skeleton-light w-10 h-10 rounded-xl" />
+              <div className="skeleton-light h-5 w-32" />
+            </div>
+            <div className="skeleton-light h-3 w-full mb-2" />
+            <div className="skeleton-light h-3 w-3/4" />
+          </div>
+          <div>
+            <div className="skeleton-light h-5 w-16 mb-4" />
+            <div className="space-y-3">
+              <div className="skeleton-light h-3 w-48" />
+              <div className="skeleton-light h-3 w-32" />
+              <div className="skeleton-light h-3 w-40" />
+            </div>
+          </div>
+          <div>
+            <div className="skeleton-light h-5 w-14 mb-4" />
+            <div className="space-y-2.5">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton-light h-3 w-20" />
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="skeleton-light h-5 w-24 mb-4" />
+            <div className="flex items-center gap-3 mb-6">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="skeleton-light w-10 h-10 rounded-xl" />
+              ))}
+            </div>
+            <div className="skeleton-light h-10 w-48 rounded-xl" />
+          </div>
+        </div>
+        <div className="border-t border-[hsl(var(--primary-foreground))]/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[hsl(var(--primary-foreground))]/40">
+            &copy; {year} DKM Masjid Jami' Al-Arqom. Hak cipta dilindungi.
+          </p>
+          <p className="text-xs text-[hsl(var(--primary-foreground))]/40">
+            Bekasi Utara, Kota Bekasi
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 export function Footer() {
   const { data } = useSiteData();
   const year = new Date().getFullYear();
 
-  const footerData = data?.footer;
+  if (!data) return <FooterSkeleton />;
+
+  const footerData = data.footer;
   const address = footerData?.address || '';
   const phone = footerData?.phone || '';
   const email = footerData?.email || '';
