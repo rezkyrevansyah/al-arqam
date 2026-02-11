@@ -2,18 +2,22 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, User, Calendar, ChevronUp, Share2 } from 'lucide-react';
-import { ARTICLES_DATA } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import { formatGoogleDriveUrl } from '../lib/utils';
 
 export function ArticleDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { data, loading } = useSiteData();
+  const articlesData = data?.articles || [];
+
   const [showBackToTop, setShowBackToTop] = useState(false);
   
   // Find article by id
-  const article = ARTICLES_DATA.find(a => a.id === id);
+  const article = articlesData.find(a => a.id === id);
   
   // Get related articles (same category, excluding current)
   const relatedArticles = article 
-    ? ARTICLES_DATA.filter(a => a.category === article.category && a.id !== article.id).slice(0, 2)
+    ? articlesData.filter(a => a.category === article.category && a.id !== article.id).slice(0, 2)
     : [];
 
   // Scroll to top when page loads
@@ -29,6 +33,15 @@ export function ArticleDetailPage() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Loading state
+  if (loading && articlesData.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
+        <div className="w-12 h-12 border-4 border-[hsl(var(--muted))] border-t-[hsl(var(--primary))] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   // Handle 404
   if (!article) {
@@ -49,15 +62,9 @@ export function ArticleDetailPage() {
     );
   }
 
-  // Generate full content (since ARTICLES_DATA has empty content, we'll create sample content)
+  // Generate full content
   const fullContent = article.content || `
     <p>${article.excerpt}</p>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    <h2>Penjelasan Lebih Lanjut</h2>
-    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
-    <h2>Kesimpulan</h2>
-    <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
   `;
 
   return (
@@ -92,7 +99,7 @@ export function ArticleDetailPage() {
         className="relative h-[40vh] md:h-[50vh] overflow-hidden"
       >
         <img
-          src={article.image}
+          src={formatGoogleDriveUrl(article.image)}
           alt={article.title}
           className="w-full h-full object-cover"
         />
@@ -140,13 +147,7 @@ export function ArticleDetailPage() {
 
             {/* Article Body */}
             <div 
-              className="p-6 md:p-10 prose prose-lg max-w-none
-                prose-headings:font-display prose-headings:text-[hsl(var(--foreground))]
-                prose-p:text-[hsl(var(--muted-foreground))] prose-p:leading-relaxed
-                prose-a:text-[hsl(var(--primary))] prose-a:no-underline hover:prose-a:underline
-                prose-strong:text-[hsl(var(--foreground))]
-                prose-h2:text-xl prose-h2:md:text-2xl prose-h2:mt-8 prose-h2:mb-4
-              "
+              className="p-6 md:p-10 article-content"
               dangerouslySetInnerHTML={{ __html: fullContent }}
             />
           </motion.article>
@@ -172,7 +173,7 @@ export function ArticleDetailPage() {
                   >
                     <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden">
                       <img
-                        src={relatedArticle.image}
+                        src={formatGoogleDriveUrl(relatedArticle.image)}
                         alt={relatedArticle.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
@@ -208,7 +209,7 @@ export function ArticleDetailPage() {
       <footer className="py-8 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            © 2026 Masjid Jami' Al-Arqom. Semua Hak Dilindungi.
+            © {new Date().getFullYear()} Masjid Jami' Al-Arqom. Semua Hak Dilindungi.
           </p>
         </div>
       </footer>

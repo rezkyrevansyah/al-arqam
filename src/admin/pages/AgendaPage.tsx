@@ -5,7 +5,7 @@ import { Plus, Pencil, Trash2, X, Save, CalendarDays, Clock, MapPin } from 'luci
 const emptyForm = { title: '', date: '', time: '', location: '', description: '', category: 'kajian' as Agenda['category'] };
 
 export default function AgendaPage() {
-  const { agendaList, addAgenda, updateAgenda, deleteAgenda } = useAdmin();
+  const { agendaList, addAgenda, updateAgenda, deleteAgenda, isSaving } = useAdmin();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -15,10 +15,10 @@ export default function AgendaPage() {
   const openEdit = (a: Agenda) => { setForm({ title: a.title, date: a.date, time: a.time, location: a.location, description: a.description, category: a.category }); setEditingId(a.id); setShowForm(true); };
   const close = () => { setShowForm(false); setEditingId(null); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.date) return;
-    if (editingId) { updateAgenda(editingId, form); }
-    else { addAgenda(form); }
+    if (editingId) { await updateAgenda(editingId, form); }
+    else { await addAgenda(form); }
     close();
   };
 
@@ -88,7 +88,7 @@ export default function AgendaPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={close} className="px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">Batal</button>
-              <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
+              <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50">
                 <Save className="w-4 h-4" /> {editingId ? 'Perbarui' : 'Simpan'}
               </button>
             </div>
@@ -107,8 +107,8 @@ export default function AgendaPage() {
             <p className="text-sm text-gray-500 mb-6">Data yang dihapus tidak dapat dikembalikan.</p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => setConfirmDelete(null)} className="px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl">Batal</button>
-              <button onClick={() => { deleteAgenda(confirmDelete); setConfirmDelete(null); }}
-                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors">Hapus</button>
+              <button onClick={async () => { await deleteAgenda(confirmDelete); setConfirmDelete(null); }} disabled={isSaving}
+                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50">Hapus</button>
             </div>
           </div>
         </div>

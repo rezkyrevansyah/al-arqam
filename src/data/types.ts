@@ -1,7 +1,7 @@
 /**
  * Type definitions for all content data
  * Used by both Landing Page and Admin Page
- * 
+ *
  * When integrating with admin:
  * 1. Keep these types as source of truth
  * 2. API responses should match these interfaces
@@ -86,8 +86,8 @@ export interface DonationConfig {
   bankName: string;
   donationCollected: number;
   donationTarget: number;
-  qrisImagePath: string;
-  qrisDownloadFilename: string;
+  qrisImageUrl: string;
+  qrisDriveFileId?: string;
 }
 
 // ============================================
@@ -98,6 +98,75 @@ export interface CountdownEvent {
   date: string; // ISO datetime
   description?: string;
   active?: boolean; // For admin panel - toggle countdown visibility
+}
+
+// ============================================
+// HERO
+// ============================================
+export interface HeroData {
+  title: string;
+  subtitle: string;
+  description: string;
+}
+
+// ============================================
+// FOOTER
+// ============================================
+export interface FooterData {
+  address: string;
+  phone: string;
+  email: string;
+  mapsUrl: string;
+  socials: SocialLink[];
+}
+
+// ============================================
+// ACTIVITY LOG
+// ============================================
+export interface ActivityLogItem {
+  id: string;
+  timestamp: string;
+  action: string;
+  entity: string;
+  entityId: string;
+  description: string;
+  user: string;
+}
+
+// ============================================
+// DASHBOARD
+// ============================================
+export interface DashboardData {
+  agendaCount: number;
+  articleCount: number;
+  galleryCount: number;
+  boardCount: number;
+  countdown: CountdownEvent;
+  donation: DonationConfig;
+  recentActivity: ActivityLogItem[];
+}
+
+// ============================================
+// ALL SITE DATA (for landing page)
+// ============================================
+export interface AllSiteData {
+  hero: HeroData;
+  countdown: CountdownEvent;
+  agenda: AgendaItem[];
+  articles: Article[];
+  gallery: GalleryItem[];
+  board: ManagementMember[];
+  donation: DonationConfig;
+  footer: FooterData;
+}
+
+// ============================================
+// LOGIN
+// ============================================
+export interface LoginResult {
+  success: boolean;
+  token?: string;
+  message?: string;
 }
 
 // ============================================

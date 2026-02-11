@@ -1,7 +1,14 @@
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { useSiteData } from '../contexts/SiteDataContext';
 
 export function Hero() {
+  const { data } = useSiteData();
+
+  const title = data?.hero?.title || "Masjid Jami' Al-Arqom";
+  const subtitle = data?.hero?.subtitle || 'Memakmurkan Masjid, Membangun Umat';
+  const description = data?.hero?.description || 'Pusat kegiatan ibadah dan dakwah di Bekasi Utara. Bersama kita tingkatkan kualitas iman dan ketaqwaan.';
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -59,7 +66,7 @@ export function Hero() {
           transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
           <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-[hsl(var(--foreground))] leading-[1.1]">
-            {"Masjid Jami' Al-Arqom".split("'").map((part, index) => (
+            {title.split("'").map((part, index) => (
               <span key={index}>
                 {index > 0 && <span className="text-[hsl(var(--gold))]">'</span>}
                 {part}
@@ -81,7 +88,7 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 1 }}
           className="font-display text-xl md:text-2xl italic text-[hsl(var(--emerald-light))] font-medium"
         >
-          Memakmurkan Masjid, Membangun Umat
+          {subtitle}
         </motion.p>
 
         <motion.p
@@ -90,7 +97,7 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 1.2 }}
           className="mt-6 text-base md:text-lg text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto leading-relaxed"
         >
-          Pusat kegiatan ibadah dan dakwah di Bekasi Utara. Bersama kita tingkatkan kualitas iman dan ketaqwaan.
+          {description}
         </motion.p>
 
         <motion.div

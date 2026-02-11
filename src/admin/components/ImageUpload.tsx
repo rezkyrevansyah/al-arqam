@@ -1,5 +1,6 @@
 import { useState, useRef, type ChangeEvent } from 'react';
 import { Upload, Link as LinkIcon, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { formatGoogleDriveUrl } from '../../lib/utils';
 
 interface ImageUploadProps {
   value: string;
@@ -236,7 +237,7 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
           <p className="text-xs font-medium text-gray-600 mb-2">Preview:</p>
           <div className={`relative ${previewHeight} rounded-xl overflow-hidden bg-gray-100 border border-gray-200`}>
             <img
-              src={value}
+              src={formatGoogleDriveUrl(value)}
               alt="Preview"
               className="w-full h-full object-cover"
               onError={() => setError('Gagal memuat gambar. Periksa URL atau file.')}

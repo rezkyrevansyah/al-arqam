@@ -1,29 +1,18 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type {
   AgendaItem,
   Article,
   GalleryItem,
   ManagementMember,
   DonationConfig,
-  ContactInfo,
-  SocialLink,
   CountdownEvent,
+  HeroData,
+  FooterData,
+  DashboardData,
+  ActivityLogItem,
 } from '../../data/types';
-import {
-  AGENDA_DATA,
-  ARTICLES_DATA,
-  GALLERY_DATA,
-  MANAGEMENT_DATA,
-  SOCIAL_LINKS,
-  CONTACT_INFO,
-  ISRA_MIRAJ_DATE,
-  BANK_ACCOUNT_NUMBER,
-  BANK_ACCOUNT_NAME,
-  DONATION_COLLECTED,
-  DONATION_TARGET,
-  QRIS_IMAGE_PATH,
-  QRIS_DOWNLOAD_FILENAME,
-} from '../../data/constants';
+import * as api from '../../services/api';
+import { invalidateCache } from '../../services/cache';
 
 // Type alias for compatibility
 export type BoardMember = ManagementMember;
@@ -40,54 +29,49 @@ export type AdminPage =
   | 'pengurus'
   | 'footer';
 
-interface HeroData {
-  title: string;
-  subtitle: string;
-  description: string;
-}
-
-interface FooterData {
-  address: string;
-  mapsLink: string;
-  phone: string;
-  email: string;
-  socials: { platform: string; url: string }[];
-}
-
 interface AdminState {
   currentPage: AdminPage;
   setCurrentPage: (page: AdminPage) => void;
 
+  isLoading: boolean;
+  isInitialized: boolean;
+  isSaving: boolean;
+
   hero: HeroData;
-  setHero: (data: HeroData) => void;
+  setHero: (data: HeroData) => Promise<void>;
 
   countdown: CountdownEvent;
-  setCountdown: (data: CountdownEvent) => void;
+  setCountdown: (data: CountdownEvent) => Promise<void>;
 
   agendaList: AgendaItem[];
-  addAgenda: (item: Omit<AgendaItem, 'id'>) => void;
-  updateAgenda: (id: string, item: Partial<AgendaItem>) => void;
-  deleteAgenda: (id: string) => void;
+  addAgenda: (item: Omit<AgendaItem, 'id'>) => Promise<void>;
+  updateAgenda: (id: string, item: Partial<AgendaItem>) => Promise<void>;
+  deleteAgenda: (id: string) => Promise<void>;
 
   articleList: Article[];
-  addArticle: (item: Omit<Article, 'id'>) => void;
-  updateArticle: (id: string, item: Partial<Article>) => void;
-  deleteArticle: (id: string) => void;
+  addArticle: (item: Omit<Article, 'id'>) => Promise<void>;
+  updateArticle: (id: string, item: Partial<Article>) => Promise<void>;
+  deleteArticle: (id: string) => Promise<void>;
 
   galleryList: GalleryItem[];
-  addGalleryItem: (item: Omit<GalleryItem, 'id'>) => void;
-  deleteGalleryItem: (id: string) => void;
+  addGalleryItem: (item: Omit<GalleryItem, 'id'>) => Promise<void>;
+  deleteGalleryItem: (id: string) => Promise<void>;
 
   donation: DonationConfig;
-  setDonation: (data: DonationConfig) => void;
+  setDonation: (data: DonationConfig) => Promise<void>;
 
   boardList: BoardMember[];
-  addBoardMember: (item: Omit<BoardMember, 'id'>) => void;
-  updateBoardMember: (id: string, item: Partial<BoardMember>) => void;
-  deleteBoardMember: (id: string) => void;
+  addBoardMember: (item: Omit<BoardMember, 'id'>) => Promise<void>;
+  updateBoardMember: (id: string, item: Partial<BoardMember>) => Promise<void>;
+  deleteBoardMember: (id: string) => Promise<void>;
 
   footer: FooterData;
-  setFooter: (data: FooterData) => void;
+  setFooter: (data: FooterData) => Promise<void>;
+
+  dashboardData: DashboardData | null;
+  loadDashboard: () => Promise<void>;
+  activityLog: ActivityLogItem[];
+  loadActivityLog: () => Promise<void>;
 
   toast: { message: string; type: 'success' | 'error' } | null;
   showToast: (message: string, type?: 'success' | 'error') => void;
@@ -95,64 +79,33 @@ interface AdminState {
 
 const AdminContext = createContext<AdminState | null>(null);
 
-let idCounter = 1000;
-const genId = () => String(++idCounter);
-
-// Data adapters
-const createFooterData = (contact: ContactInfo, socials: SocialLink[]): FooterData => ({
-  address: contact.address,
-  mapsLink: contact.mapsUrl,
-  phone: contact.phone,
-  email: contact.email,
-  socials: socials.map(s => ({ platform: s.platform, url: s.url })),
-});
+const defaultHero: HeroData = { title: '', subtitle: '', description: '' };
+const defaultCountdown: CountdownEvent = { name: '', date: '', description: '', active: false };
+const defaultDonation: DonationConfig = {
+  bankAccountNumber: '', bankAccountName: '', bankName: '',
+  donationCollected: 0, donationTarget: 0, qrisImageUrl: '',
+};
+const defaultFooter: FooterData = {
+  address: '', phone: '', email: '', mapsUrl: '', socials: [],
+};
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [currentPage, setCurrentPage] = useState<AdminPage>('dashboard');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Hero section (hardcoded for now - could be made editable in future)
-  const [hero, setHeroState] = useState<HeroData>({
-    title: "Masjid Jami' Al-Arqom",
-    subtitle: "Memakmurkan Masjid, Membangun Umat",
-    description: "Pusat kegiatan ibadah dan dakwah di Bekasi Utara. Bersama kita tingkatkan kualitas iman dan ketaqwaan.",
-  });
+  const [hero, setHeroState] = useState<HeroData>(defaultHero);
+  const [countdown, setCountdownState] = useState<CountdownEvent>(defaultCountdown);
+  const [agendaList, setAgendaList] = useState<AgendaItem[]>([]);
+  const [articleList, setArticleList] = useState<Article[]>([]);
+  const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
+  const [donation, setDonationState] = useState<DonationConfig>(defaultDonation);
+  const [boardList, setBoardList] = useState<BoardMember[]>([]);
+  const [footer, setFooterState] = useState<FooterData>(defaultFooter);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [activityLog, setActivityLog] = useState<ActivityLogItem[]>([]);
 
-  // Countdown
-  const [countdown, setCountdownState] = useState<CountdownEvent>({
-    name: "Isra Mi'raj Nabi Muhammad SAW",
-    date: ISRA_MIRAJ_DATE,
-    description: "Memperingati perjalanan agung Rasulullah SAW dari Masjidil Haram ke Masjidil Aqsa dan naik ke Sidratul Muntaha",
-  });
-
-  // Agenda
-  const [agendaList, setAgendaList] = useState<AgendaItem[]>(AGENDA_DATA);
-
-  // Articles
-  const [articleList, setArticleList] = useState<Article[]>(ARTICLES_DATA);
-
-  // Gallery
-  const [galleryList, setGalleryList] = useState<GalleryItem[]>(GALLERY_DATA);
-
-  // Donation (dengan adapter)
-  const [donation, setDonationState] = useState<DonationConfig>({
-    bankAccountNumber: BANK_ACCOUNT_NUMBER,
-    bankAccountName: BANK_ACCOUNT_NAME,
-    bankName: "Bank Syariah Indonesia (BSI)",
-    donationCollected: DONATION_COLLECTED,
-    donationTarget: DONATION_TARGET,
-    qrisImagePath: QRIS_IMAGE_PATH,
-    qrisDownloadFilename: QRIS_DOWNLOAD_FILENAME,
-  });
-
-  // Board members
-  const [boardList, setBoardList] = useState<BoardMember[]>(MANAGEMENT_DATA);
-
-  // Footer (dengan adapter)
-  const [footer, setFooterState] = useState<FooterData>(
-    createFooterData(CONTACT_INFO, SOCIAL_LINKS)
-  );
-
-  // Toast
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
@@ -160,110 +113,258 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  const setHero = useCallback((data: HeroData) => {
-    setHeroState(data);
-    showToast('Hero section berhasil diperbarui');
+  // Initialize from API
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        const [h, c, ag, ar, gl, bd, dn, ft] = await Promise.all([
+          api.fetchHero(), api.fetchCountdown(), api.fetchAgenda(), api.fetchArticles(),
+          api.fetchGallery(), api.fetchBoard(), api.fetchDonation(), api.fetchFooter(),
+        ]);
+        setHeroState(h);
+        setCountdownState(c);
+        setAgendaList(ag);
+        setArticleList(ar);
+        setGalleryList(gl);
+        setBoardList(bd);
+        setDonationState(dn);
+        setFooterState(ft);
+        setIsInitialized(true);
+      } catch (err) {
+        showToast('Gagal memuat data: ' + (err as Error).message, 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
   }, [showToast]);
 
-  const setCountdown = useCallback((data: CountdownEvent) => {
-    setCountdownState(data);
-    showToast('Countdown berhasil diperbarui');
+  const setHero = useCallback(async (data: HeroData) => {
+    try {
+      setIsSaving(true);
+      await api.saveHero(data);
+      setHeroState(data);
+      invalidateCache();
+      showToast('Hero section berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal menyimpan: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const addAgenda = useCallback((item: Omit<AgendaItem, 'id'>) => {
-    setAgendaList(prev => [{ ...item, id: genId() } as AgendaItem, ...prev]);
-    showToast('Agenda berhasil ditambahkan');
+  const setCountdown = useCallback(async (data: CountdownEvent) => {
+    try {
+      setIsSaving(true);
+      await api.saveCountdown(data);
+      setCountdownState(data);
+      invalidateCache();
+      showToast('Countdown berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal menyimpan: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const updateAgenda = useCallback((id: string, item: Partial<AgendaItem>) => {
-    setAgendaList(prev => prev.map(a => a.id === id ? { ...a, ...item } : a));
-    showToast('Agenda berhasil diperbarui');
+  const addAgenda = useCallback(async (item: Omit<AgendaItem, 'id'>) => {
+    try {
+      setIsSaving(true);
+      const result = await api.addAgenda(item);
+      setAgendaList(prev => [{ ...item, id: result.id } as AgendaItem, ...prev]);
+      invalidateCache();
+      showToast('Agenda berhasil ditambahkan');
+    } catch (err) {
+      showToast('Gagal menambahkan agenda: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const deleteAgenda = useCallback((id: string) => {
-    setAgendaList(prev => prev.filter(a => a.id !== id));
-    showToast('Agenda berhasil dihapus');
+  const updateAgenda = useCallback(async (id: string, item: Partial<AgendaItem>) => {
+    try {
+      setIsSaving(true);
+      const existing = agendaList.find(a => a.id === id);
+      if (!existing) return;
+      const updated = { ...existing, ...item };
+      await api.updateAgenda(updated);
+      setAgendaList(prev => prev.map(a => a.id === id ? updated : a));
+      invalidateCache();
+      showToast('Agenda berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal memperbarui agenda: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast, agendaList]);
+
+  const deleteAgenda = useCallback(async (id: string) => {
+    try {
+      setIsSaving(true);
+      await api.deleteAgenda(id);
+      setAgendaList(prev => prev.filter(a => a.id !== id));
+      invalidateCache();
+      showToast('Agenda berhasil dihapus');
+    } catch (err) {
+      showToast('Gagal menghapus agenda: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const addArticle = useCallback((item: Omit<Article, 'id'>) => {
-    setArticleList(prev => [{ ...item, id: genId() } as Article, ...prev]);
-    showToast('Artikel berhasil ditambahkan');
+  const addArticle = useCallback(async (item: Omit<Article, 'id'>) => {
+    try {
+      setIsSaving(true);
+      const result = await api.addArticle(item);
+      setArticleList(prev => [{ ...item, id: result.id, image: result.imageUrl || item.image } as Article, ...prev]);
+      invalidateCache();
+      showToast('Artikel berhasil ditambahkan');
+    } catch (err) {
+      showToast('Gagal menambahkan artikel: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const updateArticle = useCallback((id: string, item: Partial<Article>) => {
-    setArticleList(prev => prev.map(a => a.id === id ? { ...a, ...item } : a));
-    showToast('Artikel berhasil diperbarui');
+  const updateArticle = useCallback(async (id: string, item: Partial<Article>) => {
+    try {
+      setIsSaving(true);
+      const existing = articleList.find(a => a.id === id);
+      if (!existing) return;
+      const updated = { ...existing, ...item };
+      const result = await api.updateArticle(updated);
+      if (result.imageUrl) updated.image = result.imageUrl;
+      setArticleList(prev => prev.map(a => a.id === id ? updated : a));
+      invalidateCache();
+      showToast('Artikel berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal memperbarui artikel: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast, articleList]);
+
+  const deleteArticle = useCallback(async (id: string) => {
+    try {
+      setIsSaving(true);
+      await api.deleteArticle(id);
+      setArticleList(prev => prev.filter(a => a.id !== id));
+      invalidateCache();
+      showToast('Artikel berhasil dihapus');
+    } catch (err) {
+      showToast('Gagal menghapus artikel: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const deleteArticle = useCallback((id: string) => {
-    setArticleList(prev => prev.filter(a => a.id !== id));
-    showToast('Artikel berhasil dihapus');
+  const addGalleryItem = useCallback(async (item: Omit<GalleryItem, 'id'>) => {
+    try {
+      setIsSaving(true);
+      const result = await api.addGalleryItem(item);
+      setGalleryList(prev => [{ ...item, id: result.id, image: result.imageUrl || item.image } as GalleryItem, ...prev]);
+      invalidateCache();
+      showToast('Foto berhasil ditambahkan');
+    } catch (err) {
+      showToast('Gagal menambahkan foto: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const addGalleryItem = useCallback((item: Omit<GalleryItem, 'id'>) => {
-    setGalleryList(prev => [{ ...item, id: genId() } as GalleryItem, ...prev]);
-    showToast('Foto berhasil ditambahkan');
+  const deleteGalleryItem = useCallback(async (id: string) => {
+    try {
+      setIsSaving(true);
+      await api.deleteGalleryItem(id);
+      setGalleryList(prev => prev.filter(g => g.id !== id));
+      invalidateCache();
+      showToast('Foto berhasil dihapus');
+    } catch (err) {
+      showToast('Gagal menghapus foto: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const deleteGalleryItem = useCallback((id: string) => {
-    setGalleryList(prev => prev.filter(g => g.id !== id));
-    showToast('Foto berhasil dihapus');
+  const setDonation = useCallback(async (data: DonationConfig) => {
+    try {
+      setIsSaving(true);
+      const result = await api.saveDonation(data);
+      if (result.qrisImageUrl) data.qrisImageUrl = result.qrisImageUrl;
+      setDonationState(data);
+      invalidateCache();
+      showToast('Donasi berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal menyimpan: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const setDonation = useCallback((data: DonationConfig) => {
-    setDonationState(data);
-    showToast('Donasi berhasil diperbarui');
+  const addBoardMember = useCallback(async (item: Omit<BoardMember, 'id'>) => {
+    try {
+      setIsSaving(true);
+      const result = await api.addBoardMember(item);
+      setBoardList(prev => [...prev, { ...item, id: result.id, image: result.imageUrl || item.image } as BoardMember]);
+      invalidateCache();
+      showToast('Pengurus berhasil ditambahkan');
+    } catch (err) {
+      showToast('Gagal menambahkan pengurus: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const addBoardMember = useCallback((item: Omit<BoardMember, 'id'>) => {
-    setBoardList(prev => [...prev, { ...item, id: genId() } as BoardMember]);
-    showToast('Pengurus berhasil ditambahkan');
+  const updateBoardMember = useCallback(async (id: string, item: Partial<BoardMember>) => {
+    try {
+      setIsSaving(true);
+      const existing = boardList.find(b => b.id === id);
+      if (!existing) return;
+      const updated = { ...existing, ...item };
+      const result = await api.updateBoardMember(updated);
+      if (result.imageUrl) updated.image = result.imageUrl;
+      setBoardList(prev => prev.map(b => b.id === id ? updated : b));
+      invalidateCache();
+      showToast('Pengurus berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal memperbarui pengurus: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast, boardList]);
+
+  const deleteBoardMember = useCallback(async (id: string) => {
+    try {
+      setIsSaving(true);
+      await api.deleteBoardMember(id);
+      setBoardList(prev => prev.filter(b => b.id !== id));
+      invalidateCache();
+      showToast('Pengurus berhasil dihapus');
+    } catch (err) {
+      showToast('Gagal menghapus pengurus: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const updateBoardMember = useCallback((id: string, item: Partial<BoardMember>) => {
-    setBoardList(prev => prev.map(b => b.id === id ? { ...b, ...item } : b));
-    showToast('Pengurus berhasil diperbarui');
+  const setFooter = useCallback(async (data: FooterData) => {
+    try {
+      setIsSaving(true);
+      await api.saveFooter(data);
+      setFooterState(data);
+      invalidateCache();
+      showToast('Footer berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal menyimpan: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
   }, [showToast]);
 
-  const deleteBoardMember = useCallback((id: string) => {
-    setBoardList(prev => prev.filter(b => b.id !== id));
-    showToast('Pengurus berhasil dihapus');
+  const loadDashboard = useCallback(async () => {
+    try {
+      const data = await api.fetchDashboard();
+      setDashboardData(data);
+    } catch (err) {
+      showToast('Gagal memuat dashboard: ' + (err as Error).message, 'error');
+    }
   }, [showToast]);
 
-  const setFooter = useCallback((data: FooterData) => {
-    setFooterState(data);
-    showToast('Footer berhasil diperbarui');
-  }, [showToast]);
+  const loadActivityLog = useCallback(async () => {
+    try {
+      const logs = await api.fetchActivityLog(10);
+      setActivityLog(logs);
+    } catch {
+      // silently fail
+    }
+  }, []);
 
   return (
     <AdminContext.Provider value={{
-      currentPage,
-      setCurrentPage,
-      hero,
-      setHero,
-      countdown,
-      setCountdown,
-      agendaList,
-      addAgenda,
-      updateAgenda,
-      deleteAgenda,
-      articleList,
-      addArticle,
-      updateArticle,
-      deleteArticle,
-      galleryList,
-      addGalleryItem,
-      deleteGalleryItem,
-      donation,
-      setDonation,
-      boardList,
-      addBoardMember,
-      updateBoardMember,
-      deleteBoardMember,
-      footer,
-      setFooter,
-      toast,
-      showToast,
+      currentPage, setCurrentPage,
+      isLoading, isInitialized, isSaving,
+      hero, setHero,
+      countdown, setCountdown,
+      agendaList, addAgenda, updateAgenda, deleteAgenda,
+      articleList, addArticle, updateArticle, deleteArticle,
+      galleryList, addGalleryItem, deleteGalleryItem,
+      donation, setDonation,
+      boardList, addBoardMember, updateBoardMember, deleteBoardMember,
+      footer, setFooter,
+      dashboardData, loadDashboard,
+      activityLog, loadActivityLog,
+      toast, showToast,
     }}>
       {children}
     </AdminContext.Provider>

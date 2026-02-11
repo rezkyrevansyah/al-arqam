@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useAdmin, type BoardMember } from '../store/admin-store';
 import { Plus, Pencil, Trash2, X, Save, Users } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
+import { formatGoogleDriveUrl } from '../../lib/utils';
 
 const empty = { name: '', title: '', image: '' };
 
 export default function BoardPage() {
-  const { boardList, addBoardMember, updateBoardMember, deleteBoardMember } = useAdmin();
+  const { boardList, addBoardMember, updateBoardMember, deleteBoardMember, isSaving } = useAdmin();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
@@ -18,9 +19,10 @@ export default function BoardPage() {
     setEditId(m.id); setShowForm(true);
   };
   const close = () => { setShowForm(false); setEditId(null); };
-  const save = () => {
+  const save = async () => {
     if (!form.name || !form.title) return;
-    editId ? updateBoardMember(editId, form) : addBoardMember(form);
+    const sanitizedForm = { ...form, image: formatGoogleDriveUrl(form.image) };
+    editId ? await updateBoardMember(editId, sanitizedForm) : await addBoardMember(sanitizedForm);
     close();
   };
 
@@ -65,7 +67,7 @@ export default function BoardPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={close} className="px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100 rounded-xl">Batal</button>
-              <button onClick={save} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700">
+              <button onClick={save} disabled={isSaving} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50">
                 <Save className="w-4 h-4" /> {editId ? 'Perbarui' : 'Simpan'}
               </button>
             </div>
@@ -83,8 +85,8 @@ export default function BoardPage() {
             <p className="text-sm text-gray-500 mb-6">Data akan dihapus dari daftar kepengurusan.</p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => setDelId(null)} className="px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100 rounded-xl">Batal</button>
-              <button onClick={() => { deleteBoardMember(delId); setDelId(null); }}
-                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700">Hapus</button>
+              <button onClick={async () => { await deleteBoardMember(delId); setDelId(null); }} disabled={isSaving}
+                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50">Hapus</button>
             </div>
           </div>
         </div>
@@ -102,7 +104,7 @@ export default function BoardPage() {
               <span className="text-xs text-gray-300 w-6 text-center font-mono">{i + 1}</span>
               <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                 {m.image ? (
-                  <img src={m.image} alt="" className="w-full h-full object-cover" />
+                  <img src={formatGoogleDriveUrl(m.image)} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Users className="w-5 h-5 text-gray-300" />

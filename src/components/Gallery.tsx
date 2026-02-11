@@ -2,12 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ArrowRight } from 'lucide-react';
-import { GALLERY_DATA } from '../data/constants';
-
-// Only show first 8 photos on landing page
-const LANDING_GALLERY = GALLERY_DATA.slice(0, 8);
+import { useSiteData } from '../contexts/SiteDataContext';
+import { formatGoogleDriveUrl } from '../lib/utils';
 
 export function Gallery() {
+  const { data } = useSiteData();
+  const galleryData = data?.gallery || [];
+
+  // Only show first 8 photos on landing page
+  const landingGallery = galleryData.slice(0, 8);
+
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
@@ -15,9 +19,9 @@ export function Gallery() {
   const navigateLightbox = useCallback((direction: 1 | -1) => {
     setLightboxIndex(prev => {
       if (prev === null) return null;
-      return (prev + direction + LANDING_GALLERY.length) % LANDING_GALLERY.length;
+      return (prev + direction + landingGallery.length) % landingGallery.length;
     });
-  }, []);
+  }, [landingGallery.length]);
 
   // Handle keyboard events for lightbox
   useEffect(() => {
@@ -62,9 +66,9 @@ export function Gallery() {
         </motion.div>
 
         {/* Gallery Content */}
-        {LANDING_GALLERY.length > 0 ? (
+        {landingGallery.length > 0 ? (
           <>
-            {/* Featured/Highlight Photo - Can be managed via admin panel later */}
+            {/* Featured/Highlight Photo */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -77,8 +81,8 @@ export function Gallery() {
                 onClick={() => setLightboxIndex(0)}
               >
                 <img
-                  src={LANDING_GALLERY[0]?.image}
-                  alt={LANDING_GALLERY[0]?.title}
+                  src={formatGoogleDriveUrl(landingGallery[0]?.image)}
+                  alt={landingGallery[0]?.title}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -88,10 +92,10 @@ export function Gallery() {
                       ✨ Highlight
                     </span>
                     <h3 className="text-white font-display text-lg sm:text-2xl font-bold line-clamp-1">
-                      {LANDING_GALLERY[0]?.title}
+                      {landingGallery[0]?.title}
                     </h3>
                     <p className="text-white/70 text-xs sm:text-sm mt-1">
-                      {LANDING_GALLERY[0] && new Date(LANDING_GALLERY[0].date).toLocaleDateString('id-ID', {
+                      {landingGallery[0] && new Date(landingGallery[0].date).toLocaleDateString('id-ID', {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long',
@@ -108,9 +112,9 @@ export function Gallery() {
               </div>
             </motion.div>
 
-            {/* Gallery Grid - Show only first 8 photos on landing page */}
+            {/* Gallery Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {LANDING_GALLERY.map((item, index) => (
+              {landingGallery.map((item, index) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -121,7 +125,7 @@ export function Gallery() {
                   onClick={() => setLightboxIndex(index)}
                 >
                   <img
-                    src={item.image}
+                    src={formatGoogleDriveUrl(item.image)}
                     alt={item.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -188,7 +192,7 @@ export function Gallery() {
 
       {/* Lightbox */}
       <AnimatePresence>
-        {lightboxIndex !== null && (
+        {lightboxIndex !== null && landingGallery[lightboxIndex] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -231,16 +235,16 @@ export function Gallery() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={LANDING_GALLERY[lightboxIndex].image}
-                alt={LANDING_GALLERY[lightboxIndex].title}
+                src={formatGoogleDriveUrl(landingGallery[lightboxIndex].image)}
+                alt={landingGallery[lightboxIndex].title}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />
               <div className="text-center mt-4">
                 <h3 className="text-white font-semibold">
-                  {LANDING_GALLERY[lightboxIndex].title}
+                  {landingGallery[lightboxIndex].title}
                 </h3>
                 <p className="text-white/50 text-sm mt-1">
-                  {lightboxIndex + 1} / {LANDING_GALLERY.length}
+                  {lightboxIndex + 1} / {landingGallery.length}
                 </p>
                 <p className="text-white/40 text-xs mt-2 hidden sm:block">
                   Keyboard: Esc (Close), ← (Prev), → (Next)

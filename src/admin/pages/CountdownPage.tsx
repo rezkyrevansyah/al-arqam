@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useAdmin } from '../store/admin-store';
-import { Save, Timer, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Save, Timer, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react';
 
 export default function CountdownPage() {
-  const { countdown, setCountdown } = useAdmin();
+  const { countdown, setCountdown, isSaving } = useAdmin();
   const [form, setForm] = useState({ ...countdown });
 
-  const handleSave = () => setCountdown(form);
+  const handleSave = async () => { await setCountdown(form); };
 
   return (
     <div className="space-y-8">
@@ -17,9 +17,9 @@ export default function CountdownPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1">Atur countdown event hari besar Islam</p>
         </div>
-        <button onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-          <Save className="w-4 h-4" /> Simpan
+        <button onClick={handleSave} disabled={isSaving}
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan
         </button>
       </div>
 

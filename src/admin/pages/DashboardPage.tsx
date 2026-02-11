@@ -1,8 +1,9 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../store/admin-store';
 import {
   CalendarDays, Newspaper, Image, Users, Heart, TrendingUp,
-  ArrowUpRight, Timer,
+  ArrowUpRight, Timer, Clock,
 } from 'lucide-react';
 import type { AdminPage } from '../store/admin-store';
 
@@ -36,22 +37,28 @@ function StatCard({ label, value, icon: Icon, color, bgColor, page }: StatCardPr
   );
 }
 
+function timeAgo(timestamp: string): string {
+  const now = Date.now();
+  const then = new Date(timestamp).getTime();
+  const diff = Math.max(0, now - then);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Baru saja';
+  if (mins < 60) return `${mins} menit lalu`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} jam lalu`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} hari lalu`;
+  return new Date(timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const actionColor: Record<string, string> = {
+  create: 'bg-emerald-50 text-emerald-500',
+  update: 'bg-blue-50 text-blue-500',
+  delete: 'bg-red-50 text-red-500',
+};
+
 function RecentActivity() {
-  const { agendaList, articleList } = useAdmin();
-  const activities = [
-    ...agendaList.slice(0, 3).map(a => ({
-      type: 'agenda' as const,
-      title: a.title,
-      date: a.date,
-      icon: CalendarDays,
-    })),
-    ...articleList.slice(0, 2).map(a => ({
-      type: 'artikel' as const,
-      title: a.title,
-      date: a.date,
-      icon: Newspaper,
-    })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  const { activityLog } = useAdmin();
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6">
@@ -60,23 +67,21 @@ function RecentActivity() {
         <span className="text-xs text-gray-400 uppercase tracking-wider">Terkini</span>
       </div>
       <div className="space-y-4">
-        {activities.map((act, i) => (
-          <div key={i} className="flex items-start gap-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-              act.type === 'agenda' ? 'bg-blue-50' : 'bg-amber-50'
-            }`}>
-              <act.icon className={`w-4 h-4 ${
-                act.type === 'agenda' ? 'text-blue-500' : 'text-amber-500'
-              }`} />
+        {activityLog.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">Belum ada aktivitas.</p>
+        ) : (
+          activityLog.map((item) => (
+            <div key={item.id} className="flex items-start gap-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${actionColor[item.action] || 'bg-gray-50 text-gray-500'}`}>
+                <Clock className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-800 truncate">{item.description}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{timeAgo(item.timestamp)}</p>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-gray-800 truncate">{act.title}</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {new Date(act.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </p>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
@@ -122,8 +127,14 @@ function QuickActions() {
 }
 
 export default function DashboardPage() {
-  const { agendaList, articleList, galleryList, boardList, countdown, donation } = useAdmin();
-  const pct = Math.round((donation.donationCollected / donation.donationTarget) * 100);
+  const { agendaList, articleList, galleryList, boardList, countdown, donation, loadDashboard, loadActivityLog } = useAdmin();
+
+  useEffect(() => {
+    loadDashboard();
+    loadActivityLog();
+  }, [loadDashboard, loadActivityLog]);
+
+  const pct = donation.donationTarget > 0 ? Math.round((donation.donationCollected / donation.donationTarget) * 100) : 0;
 
   return (
     <div className="space-y-8">

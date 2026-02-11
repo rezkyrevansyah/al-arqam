@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock } from 'lucide-react';
-import { ISRA_MIRAJ_DATE } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
 
 interface TimeLeft {
   days: number;
@@ -65,7 +65,16 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 }
 
 export function Countdown() {
-  const timeLeft = useCountdown(ISRA_MIRAJ_DATE);
+  const { data } = useSiteData();
+
+  const countdownDate = data?.countdown?.date || '2026-02-26T00:00:00';
+  const countdownName = data?.countdown?.name || "Isra Mi'raj Nabi Muhammad SAW";
+  const countdownDescription = data?.countdown?.description || 'Memperingati perjalanan agung Rasulullah SAW dari Masjidil Haram ke Masjidil Aqsa dan naik ke Sidratul Muntaha';
+  const countdownActive = data?.countdown?.active !== false; // Default to true
+
+  const timeLeft = useCountdown(countdownDate);
+
+  if (!countdownActive) return null;
 
   return (
     <section className="relative py-16 md:py-20 overflow-hidden">
@@ -87,11 +96,11 @@ export function Countdown() {
           </div>
 
           <h2 className="font-display text-3xl md:text-4xl font-bold text-[hsl(var(--foreground))] mb-3">
-            Isra Mi'raj Nabi Muhammad SAW
+            {countdownName}
           </h2>
 
           <p className="text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto mb-10 text-sm md:text-base leading-relaxed">
-            Memperingati perjalanan agung Rasulullah SAW dari Masjidil Haram ke Masjidil Aqsa dan naik ke Sidratul Muntaha
+            {countdownDescription}
           </p>
 
           <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-6">
@@ -113,7 +122,7 @@ export function Countdown() {
           <div className="mt-8 inline-flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
             <Clock className="w-4 h-4" />
             <span>
-              {new Date(ISRA_MIRAJ_DATE).toLocaleDateString('id-ID', {
+              {new Date(countdownDate).toLocaleDateString('id-ID', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',

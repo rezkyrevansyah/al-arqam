@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Pause, Play, Users } from 'lucide-react';
-import { MANAGEMENT_DATA } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import { formatGoogleDriveUrl } from '../lib/utils';
 
 export function Pengurus() {
+  const { data } = useSiteData();
+  const managementData = data?.board || [];
+
   const [isPaused, setIsPaused] = useState(false);
-  const duplicatedMembers = [...MANAGEMENT_DATA, ...MANAGEMENT_DATA];
+  const duplicatedMembers = [...managementData, ...managementData];
 
   // Empty state check
-  if (MANAGEMENT_DATA.length === 0) {
+  if (managementData.length === 0) {
     return (
       <section id="tentang" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--primary))]/[0.02] to-transparent overflow-hidden">
         <div className="max-w-6xl mx-auto px-6">
@@ -95,7 +99,7 @@ export function Pengurus() {
           </button>
           <div className="flex items-center gap-2 px-4 py-2.5 bg-[hsl(var(--muted))]/50 rounded-xl text-sm text-[hsl(var(--muted-foreground))]">
             <Users className="w-4 h-4" />
-            <span>{MANAGEMENT_DATA.length} Pengurus</span>
+            <span>{managementData.length} Pengurus</span>
           </div>
         </motion.div>
       </div>
@@ -115,7 +119,7 @@ export function Pengurus() {
                 <div className="relative bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl overflow-hidden hover:border-[hsl(var(--primary))]/20 hover:shadow-xl hover:shadow-[hsl(var(--primary))]/5 transition-all duration-500">
                   <div className="relative h-64 overflow-hidden">
                     <img
-                      src={member.image}
+                      src={formatGoogleDriveUrl(member.image)}
                       alt={member.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />

@@ -8,7 +8,8 @@ import {
   Youtube, 
   Facebook 
 } from 'lucide-react';
-import { SOCIAL_LINKS, CONTACT_INFO } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import type { SocialPlatform } from '../data/types';
 
 // TikTok icon component
 function TikTokIcon({ className }: { className?: string }) {
@@ -19,7 +20,7 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-const SOCIAL_ICONS = {
+const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   instagram: Instagram,
   youtube: Youtube,
   facebook: Facebook,
@@ -28,7 +29,15 @@ const SOCIAL_ICONS = {
 const NAV_MENU = ['Agenda', 'Artikel', 'Galeri', 'Tentang', 'Donasi'];
 
 export function Footer() {
+  const { data } = useSiteData();
   const year = new Date().getFullYear();
+
+  const footerData = data?.footer;
+  const address = footerData?.address || '';
+  const phone = footerData?.phone || '';
+  const email = footerData?.email || '';
+  const mapsUrl = footerData?.mapsUrl || '';
+  const socials = footerData?.socials || [];
 
   return (
     <footer className="relative bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] overflow-hidden">
@@ -54,7 +63,7 @@ export function Footer() {
               <span className="font-display text-lg font-semibold">Masjid Al-Arqom</span>
             </div>
             <p className="text-sm text-[hsl(var(--primary-foreground))]/60 leading-relaxed">
-              Memakmurkan Masjid, Membangun Umat. Pusat kegiatan ibadah dan dakwah di Bekasi Utara.
+              Memakmurkan Masjid, Membangun Umat. Pusat kegiatan ibadah dan dakwah di RW 024, Kel. Harapan Jaya, Bekasi Utara
             </p>
           </motion.div>
 
@@ -67,18 +76,24 @@ export function Footer() {
           >
             <h4 className="font-display font-semibold text-base mb-4">Kontak</h4>
             <div className="space-y-3">
-              <div className="flex items-start gap-3 text-sm text-[hsl(var(--primary-foreground))]/70">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-[hsl(var(--gold-light))]" />
-                <span>{CONTACT_INFO.address}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-[hsl(var(--primary-foreground))]/70">
-                <Phone className="w-4 h-4 flex-shrink-0 text-[hsl(var(--gold-light))]" />
-                <span>{CONTACT_INFO.phone}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-[hsl(var(--primary-foreground))]/70">
-                <Mail className="w-4 h-4 flex-shrink-0 text-[hsl(var(--gold-light))]" />
-                <span>{CONTACT_INFO.email}</span>
-              </div>
+              {address && (
+                <div className="flex items-start gap-3 text-sm text-[hsl(var(--primary-foreground))]/70">
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-[hsl(var(--gold-light))]" />
+                  <span>{address}</span>
+                </div>
+              )}
+              {phone && (
+                <div className="flex items-center gap-3 text-sm text-[hsl(var(--primary-foreground))]/70">
+                  <Phone className="w-4 h-4 flex-shrink-0 text-[hsl(var(--gold-light))]" />
+                  <span>{phone}</span>
+                </div>
+              )}
+              {email && (
+                <div className="flex items-center gap-3 text-sm text-[hsl(var(--primary-foreground))]/70">
+                  <Mail className="w-4 h-4 flex-shrink-0 text-[hsl(var(--gold-light))]" />
+                  <span>{email}</span>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -111,38 +126,42 @@ export function Footer() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <h4 className="font-display font-semibold text-base mb-4">Ikuti Kami</h4>
-            <div className="flex items-center gap-3 mb-6">
-              {SOCIAL_LINKS.map((link) => {
-                const Icon = link.platform === 'tiktok' ? null : SOCIAL_ICONS[link.platform];
-                
-                return (
-                  <a
-                    key={link.platform}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-xl bg-[hsl(var(--primary-foreground))]/10 flex items-center justify-center hover:bg-[hsl(var(--primary-foreground))]/20 transition-colors"
-                  >
-                    {link.platform === 'tiktok' ? (
-                      <TikTokIcon className="w-4 h-4" />
-                    ) : Icon ? (
-                      <Icon className="w-4 h-4" />
-                    ) : null}
-                  </a>
-                );
-              })}
-            </div>
+            {socials.length > 0 && (
+              <div className="flex items-center gap-3 mb-6">
+                {socials.map((link) => {
+                  const Icon = link.platform === 'tiktok' ? null : SOCIAL_ICONS[link.platform as SocialPlatform];
+                  
+                  return (
+                    <a
+                      key={link.platform}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-xl bg-[hsl(var(--primary-foreground))]/10 flex items-center justify-center hover:bg-[hsl(var(--primary-foreground))]/20 transition-colors"
+                    >
+                      {link.platform === 'tiktok' ? (
+                        <TikTokIcon className="w-4 h-4" />
+                      ) : Icon ? (
+                        <Icon className="w-4 h-4" />
+                      ) : null}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
 
-            <a
-              href={CONTACT_INFO.mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[hsl(var(--primary-foreground))]/10 rounded-xl text-sm font-medium hover:bg-[hsl(var(--primary-foreground))]/20 transition-colors"
-            >
-              <MapPin className="w-4 h-4 text-[hsl(var(--gold-light))]" />
-              Buka di Google Maps
-              <ExternalLink className="w-3.5 h-3.5 text-[hsl(var(--primary-foreground))]/50" />
-            </a>
+            {mapsUrl && (
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[hsl(var(--primary-foreground))]/10 rounded-xl text-sm font-medium hover:bg-[hsl(var(--primary-foreground))]/20 transition-colors"
+              >
+                <MapPin className="w-4 h-4 text-[hsl(var(--gold-light))]" />
+                Buka di Google Maps
+                <ExternalLink className="w-3.5 h-3.5 text-[hsl(var(--primary-foreground))]/50" />
+              </a>
+            )}
           </motion.div>
         </div>
 
@@ -159,5 +178,3 @@ export function Footer() {
     </footer>
   );
 }
-
-

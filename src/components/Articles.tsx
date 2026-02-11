@@ -1,11 +1,15 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Clock, User, ArrowUpRight, BookOpen } from 'lucide-react';
-import { ARTICLES_DATA } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import { formatGoogleDriveUrl } from '../lib/utils';
 
 export function Articles() {
-  const featuredArticle = ARTICLES_DATA[0];
-  const otherArticles = ARTICLES_DATA.slice(1, 4); // Only show 3 more articles (total 4)
+  const { data } = useSiteData();
+  const articlesData = data?.articles || [];
+
+  const featuredArticle = articlesData[0];
+  const otherArticles = articlesData.slice(1, 4); // Only show 3 more articles (total 4)
 
   return (
     <section id="artikel" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--muted))]/30 to-transparent">
@@ -30,7 +34,7 @@ export function Articles() {
         </motion.div>
 
         {/* Content */}
-        {ARTICLES_DATA.length > 0 && featuredArticle ? (
+        {articlesData.length > 0 && featuredArticle ? (
           <>
             {/* Articles Grid - Equal height columns */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -46,7 +50,7 @@ export function Articles() {
             {/* Image fills remaining space */}
             <div className="relative flex-1 min-h-[200px] overflow-hidden">
               <img
-                src={featuredArticle.image}
+                src={formatGoogleDriveUrl(featuredArticle.image)}
                 alt={featuredArticle.title}
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -107,7 +111,7 @@ export function Articles() {
                 {/* Square image */}
                 <div className="relative w-24 sm:w-28 aspect-square flex-shrink-0 rounded-xl overflow-hidden">
                   <img
-                    src={article.image}
+                    src={formatGoogleDriveUrl(article.image)}
                     alt={article.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -148,7 +152,7 @@ export function Articles() {
         </div>
 
         {/* View All Articles Button - Show when more than 4 articles */}
-        {ARTICLES_DATA.length > 4 && (
+        {articlesData.length > 4 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

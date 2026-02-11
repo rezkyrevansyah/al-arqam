@@ -2,16 +2,19 @@ import { useState } from 'react';
 import { useAdmin } from '../store/admin-store';
 import { Plus, Trash2, X, Save, Image, Calendar } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
+import { formatGoogleDriveUrl } from '../../lib/utils';
 
 export default function GalleryPage() {
-  const { galleryList, addGalleryItem, deleteGalleryItem } = useAdmin();
+  const { galleryList, addGalleryItem, deleteGalleryItem, isSaving } = useAdmin();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', image: '', date: new Date().toISOString().slice(0, 10) });
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.image) return;
-    addGalleryItem(form);
+    // Sanitize URL before saving to ensure it's a direct link or clean formatted link
+    const sanitizedImage = formatGoogleDriveUrl(form.image);
+    await addGalleryItem({ ...form, image: sanitizedImage });
     setForm({ title: '', image: '', date: new Date().toISOString().slice(0, 10) });
     setShowForm(false);
   };
@@ -44,7 +47,7 @@ export default function GalleryPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" placeholder="Nama kegiatan..." />
               </div>
               <ImageUpload
-                value={form.image}
+                value={formatGoogleDriveUrl(form.image)}
                 onChange={(url) => setForm({ ...form, image: url })}
                 label="Foto Galeri"
                 previewHeight="h-56"
@@ -57,7 +60,7 @@ export default function GalleryPage() {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => setShowForm(false)} className="px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100 rounded-xl">Batal</button>
-              <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700">
+              <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50">
                 <Save className="w-4 h-4" /> Simpan
               </button>
             </div>
@@ -74,8 +77,8 @@ export default function GalleryPage() {
             <p className="text-sm text-gray-500 mb-6">Foto akan dihapus dari galeri.</p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => setConfirmDelete(null)} className="px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100 rounded-xl">Batal</button>
-              <button onClick={() => { deleteGalleryItem(confirmDelete); setConfirmDelete(null); }}
-                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700">Hapus</button>
+              <button onClick={async () => { await deleteGalleryItem(confirmDelete); setConfirmDelete(null); }} disabled={isSaving}
+                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50">Hapus</button>
             </div>
           </div>
         </div>
@@ -91,7 +94,7 @@ export default function GalleryPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {galleryList.map(g => (
             <div key={g.id} className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all">
-              <img src={g.image} alt={g.title} className="h-44 w-full object-cover" />
+              <img src={formatGoogleDriveUrl(g.image)} alt={g.title} className="h-44 w-full object-cover" />
               <div className="p-3">
                 <h3 className="text-xs font-semibold text-gray-800 truncate">{g.title}</h3>
                 <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">

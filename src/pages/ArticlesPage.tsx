@@ -2,19 +2,23 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Home, Clock, User, ArrowUpRight, ChevronUp, Filter, BookOpen } from 'lucide-react';
-import { ARTICLES_DATA } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import { formatGoogleDriveUrl } from '../lib/utils';
 
 export function ArticlesPage() {
+  const { data, loading } = useSiteData();
+  const articlesData = data?.articles || [];
+
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [filter, setFilter] = useState<string>('Pengumuman');
+  const [filter, setFilter] = useState<string>('all');
 
   // Get unique categories
-  const categories = ['all', ...new Set(ARTICLES_DATA.map(article => article.category))];
+  const categories = ['all', ...new Set(articlesData.map(article => article.category))];
 
   // Filter articles by category
   const filteredArticles = filter === 'all'
-    ? ARTICLES_DATA
-    : ARTICLES_DATA.filter(article => article.category === filter);
+    ? articlesData
+    : articlesData.filter(article => article.category === filter);
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -29,6 +33,14 @@ export function ArticlesPage() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (loading && articlesData.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
+        <div className="w-12 h-12 border-4 border-[hsl(var(--muted))] border-t-[hsl(var(--primary))] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))]">
@@ -107,7 +119,7 @@ export function ArticlesPage() {
                   {/* Image */}
                   <div className="relative h-48 flex-shrink-0 overflow-hidden">
                     <img
-                      src={article.image}
+                      src={formatGoogleDriveUrl(article.image)}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
@@ -186,7 +198,7 @@ export function ArticlesPage() {
       <footer className="py-8 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] mt-16">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            © 2026 Masjid Jami' Al-Arqom. Semua Hak Dilindungi.
+            © {new Date().getFullYear()} Masjid Jami' Al-Arqom. Semua Hak Dilindungi.
           </p>
         </div>
       </footer>

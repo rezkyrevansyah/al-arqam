@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useAdmin } from '../store/admin-store';
-import { Save, MapPin, Phone, Mail, Plus, Trash2, Globe } from 'lucide-react';
+import { Save, MapPin, Phone, Mail, Plus, Trash2, Globe, Loader2 } from 'lucide-react';
+import type { SocialPlatform } from '../../data/types';
 
 export default function FooterPage() {
-  const { footer, setFooter } = useAdmin();
+  const { footer, setFooter, isSaving } = useAdmin();
   const [form, setForm] = useState({ ...footer });
 
-  const handleSave = () => setFooter(form);
+  const handleSave = async () => { await setFooter(form); };
 
   const addSocial = () => {
-    setForm({ ...form, socials: [...form.socials, { platform: '', url: '' }] });
+    setForm({ ...form, socials: [...form.socials, { platform: 'instagram' as SocialPlatform, url: '' }] });
   };
   const removeSocial = (i: number) => {
     setForm({ ...form, socials: form.socials.filter((_, idx) => idx !== i) });
@@ -27,9 +28,9 @@ export default function FooterPage() {
           <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>Footer</h1>
           <p className="text-sm text-gray-500 mt-1">Kelola informasi kontak, lokasi, dan sosial media</p>
         </div>
-        <button onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-          <Save className="w-4 h-4" /> Simpan
+        <button onClick={handleSave} disabled={isSaving}
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan
         </button>
       </div>
 
@@ -57,7 +58,7 @@ export default function FooterPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />Link Google Maps</span>
             </label>
-            <input type="text" value={form.mapsLink} onChange={e => setForm({ ...form, mapsLink: e.target.value })}
+            <input type="text" value={form.mapsUrl} onChange={e => setForm({ ...form, mapsUrl: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" />
           </div>
           <div className="grid grid-cols-2 gap-4">

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, BookOpen, Moon, Users, MessageSquare, Home, ChevronDown, CheckCircle2, ChevronUp } from 'lucide-react';
-import { AGENDA_DATA, type AgendaItem } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import type { AgendaCategory } from '../data/types';
 
 const CATEGORY_OPTIONS = [
   { key: 'all', label: 'Semua Kategori', icon: Calendar },
@@ -28,7 +29,7 @@ const MONTH_OPTIONS = [
   { value: '11', label: 'Desember' },
 ];
 
-const CATEGORY_STYLES: Record<AgendaItem['category'], string> = {
+const CATEGORY_STYLES: Record<AgendaCategory, string> = {
   kajian: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   sholat: 'bg-blue-50 text-blue-700 border-blue-200',
   kegiatan: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -36,12 +37,15 @@ const CATEGORY_STYLES: Record<AgendaItem['category'], string> = {
 };
 
 export function AgendaPage() {
+  const { data, loading } = useSiteData();
+  const agendaData = data?.agenda || [];
+
   // Find the latest agenda date for default filter
   const getDefaultFilter = () => {
-    if (AGENDA_DATA.length === 0) return { month: 'all', year: 'all' };
+    if (agendaData.length === 0) return { month: 'all', year: 'all' };
     
     // Sort by date descending to get the latest one
-    const latestAgenda = [...AGENDA_DATA].sort((a, b) => 
+    const latestAgenda = [...agendaData].sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     )[0];
 
@@ -59,8 +63,18 @@ export function AgendaPage() {
   const [activeYear, setActiveYear] = useState<string>(defaultFilter.year);
   const [showBackToTop, setShowBackToTop] = useState(false);
   
+  // Update default filter when data loads
+  useEffect(() => {
+    if (agendaData.length > 0) {
+      const filter = getDefaultFilter();
+      setActiveMonth(filter.month);
+      setActiveYear(filter.year);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agendaData.length]);
+
   // Get unique years from data
-  const years = ['all', ...new Set(AGENDA_DATA.map(item => new Date(item.date).getFullYear().toString()))].sort((a, b) => b.localeCompare(a));
+  const years = ['all', ...new Set(agendaData.map(item => new Date(item.date).getFullYear().toString()))].sort((a, b) => b.localeCompare(a));
 
   // Scroll to top on load
   useEffect(() => {
@@ -76,7 +90,7 @@ export function AgendaPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const filteredAgenda = AGENDA_DATA.filter(item => {
+  const filteredAgenda = agendaData.filter(item => {
     const itemDate = new Date(item.date);
     const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
     const matchesMonth = activeMonth === 'all' || itemDate.getMonth().toString() === activeMonth;
@@ -90,6 +104,14 @@ export function AgendaPage() {
     today.setHours(0, 0, 0, 0);
     return new Date(dateStr) < today;
   };
+
+  if (loading && agendaData.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
+        <div className="w-12 h-12 border-4 border-[hsl(var(--muted))] border-t-[hsl(var(--primary))] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))]">
@@ -312,7 +334,7 @@ export function AgendaPage() {
       <footer className="py-8 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] mt-16">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            © 2026 Masjid Jami' Al-Arqom. Semua Hak Dilindungi.
+            © {new Date().getFullYear()} Masjid Jami' Al-Arqom. Semua Hak Dilindungi.
           </p>
         </div>
       </footer>

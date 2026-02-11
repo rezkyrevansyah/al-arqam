@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useAdmin } from '../store/admin-store';
-import { Save, Eye } from 'lucide-react';
+import { Save, Eye, Loader2 } from 'lucide-react';
 
 export default function HeroPage() {
-  const { hero, setHero } = useAdmin();
+  const { hero, setHero, isSaving } = useAdmin();
   const [form, setForm] = useState({ ...hero });
 
-  const handleSave = () => {
-    setHero(form);
+  const handleSave = async () => {
+    await setHero(form);
   };
 
   return (
@@ -21,9 +21,10 @@ export default function HeroPage() {
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors"
+          disabled={isSaving}
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
         >
-          <Save className="w-4 h-4" />
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Simpan
         </button>
       </div>

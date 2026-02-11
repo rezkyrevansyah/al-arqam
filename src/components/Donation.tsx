@@ -1,14 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Landmark, Copy, Check, QrCode, Download, X, Maximize2 } from 'lucide-react';
-import { 
-  BANK_ACCOUNT_NUMBER, 
-  BANK_ACCOUNT_NAME,
-  DONATION_COLLECTED,
-  DONATION_TARGET,
-  QRIS_IMAGE_PATH,
-  QRIS_DOWNLOAD_FILENAME
-} from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import { formatGoogleDriveUrl } from '../lib/utils';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -19,13 +13,23 @@ function formatCurrency(amount: number): string {
 }
 
 export function Donation() {
+  const { data } = useSiteData();
+
+  const bankAccountNumber = data?.donation?.bankAccountNumber || '';
+  const bankAccountName = data?.donation?.bankAccountName || '';
+  const bankName = data?.donation?.bankName || 'Bank Syariah Indonesia (BSI)';
+  const donationCollected = data?.donation?.donationCollected || 0;
+  const donationTarget = data?.donation?.donationTarget || 100000000;
+  const rawQrisUrl = data?.donation?.qrisImageUrl;
+  const qrisImageUrl = formatGoogleDriveUrl(rawQrisUrl);
+
   const [isCopied, setIsCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const progressPercent = Math.min((DONATION_COLLECTED / DONATION_TARGET) * 100, 100);
+  const progressPercent = donationTarget > 0 ? Math.min((donationCollected / donationTarget) * 100, 100) : 0;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(BANK_ACCOUNT_NUMBER.replace(/\s/g, ''));
+      await navigator.clipboard.writeText(bankAccountNumber.replace(/\s/g, ''));
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
@@ -35,19 +39,19 @@ export function Donation() {
 
   const handleDownloadQRIS = async () => {
     try {
-      const response = await fetch(QRIS_IMAGE_PATH);
+      const response = await fetch(qrisImageUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
-      link.download = QRIS_DOWNLOAD_FILENAME;
+      link.href = qrisImageUrl;
+      link.download = 'QRIS-Masjid-Al-Arqom.png';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch {
       // Fallback: open image in new tab
-      window.open(QRIS_IMAGE_PATH, '_blank');
+      window.open(qrisImageUrl, '_blank');
     }
   };
 
@@ -115,14 +119,14 @@ export function Donation() {
             </motion.div>
 
             {/* Row 2: Bank Transfer + QRIS */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              {/* Bank Transfer Card (3 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              {/* Main Donation Card */}
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="lg:col-span-3 bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-3xl p-8 relative overflow-hidden"
+                transition={{ duration: 0.6 }}
+                className={`${qrisImageUrl ? 'lg:col-span-3' : 'lg:col-span-5 max-w-3xl mx-auto'} bg-white border border-[hsl(var(--border))]/60 rounded-3xl p-6 md:p-8 shadow-xl shadow-black/5 relative overflow-hidden`}
               >
                 <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04]">
                   <svg viewBox="0 0 120 120">
@@ -140,10 +144,10 @@ export function Donation() {
                         Transfer Bank
                       </p>
                       <h3 className="font-display text-xl font-bold text-[hsl(var(--foreground))]">
-                        Bank Syariah Indonesia (BSI)
+                        {bankName}
                       </h3>
                       <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-                        a.n. {BANK_ACCOUNT_NAME}
+                        a.n. {bankAccountName}
                       </p>
                     </div>
                   </div>
@@ -154,7 +158,7 @@ export function Donation() {
                         Nomor Rekening
                       </p>
                       <p className="font-display text-2xl font-bold text-[hsl(var(--foreground))] tracking-wider">
-                        {BANK_ACCOUNT_NUMBER}
+                        {bankAccountNumber}
                       </p>
                     </div>
                     <button
@@ -191,86 +195,96 @@ export function Donation() {
                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <span className="text-lg font-display font-bold text-[hsl(var(--primary))]">
-                        {formatCurrency(DONATION_COLLECTED)}
+                        {formatCurrency(donationCollected)}
                       </span>
                       <span className="text-sm text-[hsl(var(--muted-foreground))]">
-                        dari {formatCurrency(DONATION_TARGET)}
+                        dari {formatCurrency(donationTarget)}
                       </span>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* QRIS Card (2 cols) */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="lg:col-span-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-3xl p-6 relative overflow-hidden flex flex-col"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04]">
-                  <svg viewBox="0 0 120 120">
-                    <path d="M60 0L120 60L60 120L0 60Z" fill="hsl(38,70%,55%)" />
-                  </svg>
-                </div>
-
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--gold))]/10 flex items-center justify-center flex-shrink-0">
-                        <QrCode className="w-5 h-5 text-[hsl(var(--gold))]" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
-                          Pembayaran Digital
-                        </p>
-                        <h3 className="font-display text-lg font-bold text-[hsl(var(--foreground))]">
-                          QRIS
-                        </h3>
-                      </div>
-                    </div>
+              {/* QRIS Card (2 cols) - Only show if valid URL exists */}
+              {qrisImageUrl && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="lg:col-span-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-3xl p-6 relative overflow-hidden flex flex-col"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.04]">
+                    <svg viewBox="0 0 120 120">
+                      <path d="M60 0L120 60L60 120L0 60Z" fill="hsl(38,70%,55%)" />
+                    </svg>
                   </div>
 
-                  {/* QRIS Image - Clickable for fullscreen */}
-                  <div className="flex-1 flex items-center justify-center mb-4">
-                    <button
-                      onClick={() => setIsFullscreen(true)}
-                      className="group relative bg-white p-4 rounded-2xl shadow-lg border border-[hsl(var(--border))]/40 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                    >
-                      <img
-                        src={QRIS_IMAGE_PATH}
-                        alt="QRIS Masjid Al-Arqom"
-                        className="w-40 h-40 object-contain rounded-lg"
-                      />
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-2xl transition-all duration-300 flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
-                          <Maximize2 className="w-4 h-4 text-[hsl(var(--foreground))]" />
-                          <span className="text-xs font-medium text-[hsl(var(--foreground))]">Perbesar</span>
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--gold))]/10 flex items-center justify-center flex-shrink-0">
+                          <QrCode className="w-5 h-5 text-[hsl(var(--gold))]" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                            Pembayaran Digital
+                          </p>
+                          <h3 className="font-display text-lg font-bold text-[hsl(var(--foreground))]">
+                            QRIS
+                          </h3>
                         </div>
                       </div>
-                    </button>
-                  </div>
+                    </div>
 
-                  {/* Download Button */}
-                  <button
-                    onClick={handleDownloadQRIS}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-[hsl(var(--gold))] text-white hover:bg-[hsl(var(--gold))]/90 transition-all duration-300 shadow-md hover:shadow-lg"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download QRIS
-                  </button>
-                </div>
-              </motion.div>
+                    {/* QRIS Image - Clickable for fullscreen */}
+                    <div className="flex-1 flex items-center justify-center mb-4">
+                      <button
+                        onClick={() => setIsFullscreen(true)}
+                        className="group relative bg-white p-4 rounded-2xl shadow-lg border border-[hsl(var(--border))]/40 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                      >
+                        <img
+                          src={qrisImageUrl}
+                          alt="QRIS Masjid Al-Arqom"
+                          className="w-40 h-40 object-contain rounded-lg"
+                        />
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-2xl transition-all duration-300 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+                            <Maximize2 className="w-4 h-4 text-[hsl(var(--foreground))]" />
+                            <span className="text-xs font-medium text-[hsl(var(--foreground))]">Perbesar</span>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-[hsl(var(--foreground))] mb-1">
+                        Scan kode QRIS di atas
+                      </p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))] mb-4">
+                        Mendukung semua e-wallet & mobile banking
+                      </p>
+                      
+                      <button
+                        onClick={handleDownloadQRIS}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors text-sm font-medium text-[hsl(var(--foreground))]"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download QRIS
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Fullscreen QRIS Modal */}
+      {/* Fullscreen Modal */}
       <AnimatePresence>
-        {isFullscreen && (
+        {isFullscreen && qrisImageUrl && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -311,7 +325,7 @@ export function Donation() {
               {/* QRIS Image */}
               <div className="bg-[hsl(var(--muted))]/30 p-4 rounded-2xl mb-6">
                 <img
-                  src={QRIS_IMAGE_PATH}
+                  src={qrisImageUrl}
                   alt="QRIS Masjid Al-Arqom"
                   className="w-full max-w-xs mx-auto object-contain rounded-xl"
                 />

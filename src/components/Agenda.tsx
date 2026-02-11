@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Clock, MapPin, ArrowRight, Calendar } from 'lucide-react';
-import { AGENDA_DATA, type AgendaItem } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import type { AgendaCategory } from '../data/types';
 
-const CATEGORY_STYLES: Record<AgendaItem['category'], string> = {
+const CATEGORY_STYLES: Record<AgendaCategory, string> = {
   kajian: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   sholat: 'bg-blue-50 text-blue-700 border-blue-200',
   kegiatan: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -11,8 +12,11 @@ const CATEGORY_STYLES: Record<AgendaItem['category'], string> = {
 };
 
 export function Agenda() {
+  const { data } = useSiteData();
+  const agendaData = data?.agenda || [];
+
   // Filter upcoming agendas (today or future)
-  const upcomingAgendas = AGENDA_DATA.filter(item => {
+  const upcomingAgendas = agendaData.filter(item => {
     const itemDate = new Date(item.date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -70,7 +74,7 @@ export function Agenda() {
                         {item.title}
                       </h3>
                       <div className="flex items-center gap-1 mt-1">
-                        <span className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full border ${CATEGORY_STYLES[item.category]}`}>
+                        <span className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full border ${CATEGORY_STYLES[item.category] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                           {item.category}
                         </span>
                       </div>

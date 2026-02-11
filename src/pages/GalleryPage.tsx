@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight, ZoomIn, Home, Calendar, Filter } from 'lucide-react';
-import { GALLERY_DATA } from '../data/constants';
+import { useSiteData } from '../contexts/SiteDataContext';
+import { formatGoogleDriveUrl } from '../lib/utils';
 
 export function GalleryPage() {
+  const { data, loading } = useSiteData();
+  const galleryData = data?.gallery || [];
+
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   // Scroll to top when page loads
@@ -13,24 +17,40 @@ export function GalleryPage() {
   }, []);
   
   // Get unique years for filter, sorted descending (newest first)
-  const years = [...new Set(GALLERY_DATA.map(item => new Date(item.date).getFullYear().toString()))].sort((a, b) => parseInt(b) - parseInt(a));
+  const years = [...new Set(galleryData.map(item => new Date(item.date).getFullYear().toString()))].sort((a, b) => parseInt(b) - parseInt(a));
   const allYears = ['all', ...years];
   
   // Default to the latest year
-  const [filter, setFilter] = useState<string>(years[0] || 'all');
+  const [filter, setFilter] = useState<string>('all');
+
+  // Update default filter when data loads
+  useEffect(() => {
+    if (years.length > 0 && filter === 'all') {
+      setFilter(years[0]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [years.length]);
 
   const closeLightbox = () => setLightboxIndex(null);
   
   const navigateLightbox = (direction: 1 | -1) => {
     if (lightboxIndex !== null) {
-      setLightboxIndex((lightboxIndex + direction + GALLERY_DATA.length) % GALLERY_DATA.length);
+      const filteredLen = filteredData.length;
+      setLightboxIndex((lightboxIndex + direction + filteredLen) % filteredLen);
     }
   };
 
-  
   const filteredData = filter === 'all' 
-    ? GALLERY_DATA 
-    : GALLERY_DATA.filter(item => new Date(item.date).getFullYear().toString() === filter);
+    ? galleryData 
+    : galleryData.filter(item => new Date(item.date).getFullYear().toString() === filter);
+
+  if (loading && galleryData.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
+        <div className="w-12 h-12 border-4 border-[hsl(var(--muted))] border-t-[hsl(var(--primary))] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))]">
@@ -100,10 +120,10 @@ export function GalleryPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: index * 0.03 }}
               className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-[hsl(var(--muted))]"
-              onClick={() => setLightboxIndex(GALLERY_DATA.findIndex(g => g.id === item.id))}
+              onClick={() => setLightboxIndex(index)}
             >
               <img
-                src={item.image}
+                src={formatGoogleDriveUrl(item.image)}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
@@ -159,14 +179,14 @@ export function GalleryPage() {
       <footer className="border-t border-[hsl(var(--border))] py-8">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            © 2026 Masjid Jami' Al-Arqom. Semua hak dilindungi.
+            © {new Date().getFullYear()} Masjid Jami' Al-Arqom. Semua hak dilindungi.
           </p>
         </div>
       </footer>
 
       {/* Lightbox */}
       <AnimatePresence>
-        {lightboxIndex !== null && (
+        {lightboxIndex !== null && filteredData[lightboxIndex] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -206,16 +226,16 @@ export function GalleryPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={GALLERY_DATA[lightboxIndex].image}
-                alt={GALLERY_DATA[lightboxIndex].title}
+                src={formatGoogleDriveUrl(filteredData[lightboxIndex].image)}
+                alt={filteredData[lightboxIndex].title}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />
               <div className="text-center mt-4">
                 <h3 className="text-white font-semibold">
-                  {GALLERY_DATA[lightboxIndex].title}
+                  {filteredData[lightboxIndex].title}
                 </h3>
                 <p className="text-white/50 text-sm mt-1">
-                  {lightboxIndex + 1} / {GALLERY_DATA.length}
+                  {lightboxIndex + 1} / {filteredData.length}
                 </p>
               </div>
             </motion.div>

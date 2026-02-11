@@ -1,18 +1,31 @@
 import { useState } from 'react';
 import { useAdmin } from '../store/admin-store';
-import { Save, Landmark, TrendingUp } from 'lucide-react';
+import { Save, Landmark, TrendingUp, Loader2, QrCode } from 'lucide-react';
+import ImageUpload from '../components/ImageUpload';
+import { formatGoogleDriveUrl } from '../../lib/utils';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 }
 
 export default function DonationPage() {
-  const { donation, setDonation } = useAdmin();
+  const { donation, setDonation, isSaving } = useAdmin();
   const [form, setForm] = useState({ ...donation });
 
   const pct = form.donationTarget > 0 ? Math.min(Math.round((form.donationCollected / form.donationTarget) * 100), 100) : 0;
+  
+  const formattedQrisUrl = formatGoogleDriveUrl(form.qrisImageUrl);
 
-  const handleSave = () => setDonation(form);
+  const handleSave = async () => {
+    // Workaround for Apps Script backend:
+    // If we send empty string, backend preserves existing image.
+    // So we send '(kosong dulu)' to explicitely clear it.
+    const payload = { ...form };
+    if (!payload.qrisImageUrl) {
+      payload.qrisImageUrl = '(kosong dulu)';
+    }
+    await setDonation(payload);
+  };
 
   return (
     <div className="space-y-8">
@@ -21,15 +34,16 @@ export default function DonationPage() {
           <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>Donasi</h1>
           <p className="text-sm text-gray-500 mt-1">Kelola informasi donasi dan progress pengumpulan</p>
         </div>
-        <button onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
-          <Save className="w-4 h-4" /> Simpan
+        <button onClick={handleSave} disabled={isSaving}
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form */}
         <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl p-6 space-y-5">
+          {/* Bank Info */}
           <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
               <Landmark className="w-5 h-5 text-emerald-600" />
@@ -58,6 +72,28 @@ export default function DonationPage() {
             </div>
           </div>
 
+          {/* QRIS Upload */}
+          <div className="flex items-center gap-3 pt-4 pb-4 border-t border-b border-gray-100">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+              <QrCode className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-800">QRIS Donasi</h3>
+              <p className="text-xs text-gray-500">Upload kode QRIS agar jamaah mudah berdonasi</p>
+            </div>
+          </div>
+          
+          <div>
+            <ImageUpload
+              value={formattedQrisUrl}
+              onChange={(url) => setForm({ ...form, qrisImageUrl: url })}
+              label="Upload Gambar QRIS"
+              previewHeight="h-64"
+            />
+            <p className="text-xs text-gray-400 mt-2">Format: JPG, PNG. Maksimal 5MB.</p>
+          </div>
+
+          {/* Progress Donasi */}
           <div className="flex items-center gap-3 pt-4 pb-4 border-t border-b border-gray-100">
             <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-amber-600" />
@@ -104,6 +140,14 @@ export default function DonationPage() {
             </p>
             <p className="text-xs text-gray-500 mt-1">a.n. {form.bankAccountName || '-'}</p>
           </div>
+
+          {formattedQrisUrl && (
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col items-center text-center">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Preview QRIS</p>
+              <img src={formattedQrisUrl} alt="QRIS" className="w-full max-w-[200px] h-auto rounded-lg shadow-sm border border-gray-100" />
+              <p className="text-xs text-gray-500 mt-3">Scan untuk berdonasi</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

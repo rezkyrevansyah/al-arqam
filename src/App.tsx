@@ -11,6 +11,7 @@ import { Donation } from './components/Donation';
 import { Footer } from './components/Footer';
 import { useScrollToHash } from './hooks/useScrollToHash';
 import { AdminProvider } from './admin/store/admin-store';
+import { SiteDataProvider } from './contexts/SiteDataContext';
 
 // Lazy load pages
 const AgendaPage = lazy(() => import('./pages/AgendaPage').then(module => ({ default: module.AgendaPage })));
@@ -53,18 +54,20 @@ function HomePage() {
 function App() {
   return (
     <AdminProvider>
-      <Router>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/agenda" element={<AgendaPage />} />
-            <Route path="/galeri" element={<GalleryPage />} />
-            <Route path="/artikel" element={<ArticlesPage />} />
-            <Route path="/artikel/:id" element={<ArticleDetailPage />} />
-            <Route path="/admin/*" element={<AdminPanel />} />
-          </Routes>
-        </Suspense>
-      </Router>
+      <SiteDataProvider>
+        <Router>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/agenda" element={<AgendaPage />} />
+              <Route path="/galeri" element={<GalleryPage />} />
+              <Route path="/artikel" element={<ArticlesPage />} />
+              <Route path="/artikel/:id" element={<ArticleDetailPage />} />
+              <Route path="/admin/*" element={<AdminPanel />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </SiteDataProvider>
     </AdminProvider>
   );
 }
