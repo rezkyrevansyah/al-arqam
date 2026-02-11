@@ -10,12 +10,16 @@ import { Pengurus } from './components/Pengurus';
 import { Donation } from './components/Donation';
 import { Footer } from './components/Footer';
 import { useScrollToHash } from './hooks/useScrollToHash';
+import { AdminProvider } from './admin/store/admin-store';
 
 // Lazy load pages
 const AgendaPage = lazy(() => import('./pages/AgendaPage').then(module => ({ default: module.AgendaPage })));
 const GalleryPage = lazy(() => import('./pages/GalleryPage').then(module => ({ default: module.GalleryPage })));
 const ArticlesPage = lazy(() => import('./pages/ArticlesPage').then(module => ({ default: module.ArticlesPage })));
 const ArticleDetailPage = lazy(() => import('./pages/ArticleDetailPage').then(module => ({ default: module.ArticleDetailPage })));
+
+// Lazy load admin panel
+const AdminPanel = lazy(() => import('./admin/AdminPanel'));
 
 // Loading component
 function PageLoader() {
@@ -48,17 +52,20 @@ function HomePage() {
 
 function App() {
   return (
-    <Router>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/agenda" element={<AgendaPage />} />
-          <Route path="/galeri" element={<GalleryPage />} />
-          <Route path="/artikel" element={<ArticlesPage />} />
-          <Route path="/artikel/:id" element={<ArticleDetailPage />} />
-        </Routes>
-      </Suspense>
-    </Router>
+    <AdminProvider>
+      <Router>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/agenda" element={<AgendaPage />} />
+            <Route path="/galeri" element={<GalleryPage />} />
+            <Route path="/artikel" element={<ArticlesPage />} />
+            <Route path="/artikel/:id" element={<ArticleDetailPage />} />
+            <Route path="/admin/*" element={<AdminPanel />} />
+          </Routes>
+        </Suspense>
+      </Router>
+    </AdminProvider>
   );
 }
 

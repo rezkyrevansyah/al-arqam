@@ -97,6 +97,7 @@ export interface CountdownEvent {
   name: string;
   date: string; // ISO datetime
   description?: string;
+  active?: boolean; // For admin panel - toggle countdown visibility
 }
 
 // ============================================
