@@ -39,13 +39,12 @@ function PengurusSkeleton() {
 
 export function Pengurus() {
   const { data } = useSiteData();
+  const [isPaused, setIsPaused] = useState(false);
+
+  const managementData = data?.board || [];
+  const duplicatedMembers = [...managementData, ...managementData];
 
   if (!data) return <PengurusSkeleton />;
-
-  const managementData = data.board || [];
-
-  const [isPaused, setIsPaused] = useState(false);
-  const duplicatedMembers = [...managementData, ...managementData];
 
   // Empty state check
   if (managementData.length === 0) {

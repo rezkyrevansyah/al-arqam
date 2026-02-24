@@ -91,19 +91,20 @@ function DonationSkeleton() {
 export function Donation() {
   const { data } = useSiteData();
 
-  if (!data) return <DonationSkeleton />;
-
-  const bankAccountNumber = data.donation?.bankAccountNumber || '';
-  const bankAccountName = data.donation?.bankAccountName || '';
-  const bankName = data.donation?.bankName || 'Bank Syariah Indonesia (BSI)';
-  const donationCollected = data.donation?.donationCollected || 0;
-  const donationTarget = data.donation?.donationTarget || 100000000;
-  const rawQrisUrl = data.donation?.qrisImageUrl;
-  const qrisImageUrl = formatGoogleDriveUrl(rawQrisUrl);
-
   const [isCopied, setIsCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const bankAccountNumber = data?.donation?.bankAccountNumber || '';
+  const bankAccountName = data?.donation?.bankAccountName || '';
+  const bankName = data?.donation?.bankName || 'Bank Syariah Indonesia (BSI)';
+  const donationCollected = data?.donation?.donationCollected || 0;
+  const donationTarget = data?.donation?.donationTarget || 100000000;
+  const rawQrisUrl = data?.donation?.qrisImageUrl;
+  const qrisImageUrl = formatGoogleDriveUrl(rawQrisUrl);
+  
   const progressPercent = donationTarget > 0 ? Math.min((donationCollected / donationTarget) * 100, 100) : 0;
+
+  if (!data) return <DonationSkeleton />;
 
   const handleCopy = async () => {
     try {

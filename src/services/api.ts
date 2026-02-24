@@ -13,7 +13,7 @@ import type {
   LoginResult,
 } from '../data/types';
 
-const API_URL = import.meta.env.VITE_APPS_SCRIPT_URL as string;
+const API_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL as string;
 
 // ============================================
 // GENERIC FETCH HELPERS

@@ -1,6 +1,9 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import { NAV_LINKS } from '../data/constants';
 
 export function Navbar() {
@@ -58,11 +61,13 @@ export function Navbar() {
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="flex items-center gap-3 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300 shadow-sm">
-                <img 
+              <div className="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300 shadow-sm relative">
+                <Image 
                   src="/logo.png" 
                   alt="Logo Masjid Al-Arqom" 
-                  className="w-8 h-8 object-contain"
+                  width={32}
+                  height={32}
+                  className="object-contain"
                 />
               </div>
               <span className="hidden sm:block font-display text-lg font-semibold text-[hsl(var(--foreground))] tracking-tight">

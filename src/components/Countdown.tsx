@@ -94,15 +94,14 @@ function CountdownSkeleton() {
 export function Countdown() {
   const { data } = useSiteData();
 
-  if (!data) return <CountdownSkeleton />;
-
-  const countdownDate = data.countdown?.date || '2026-02-26T00:00:00';
-  const countdownName = data.countdown?.name || "Isra Mi'raj Nabi Muhammad SAW";
-  const countdownDescription = data.countdown?.description || 'Memperingati perjalanan agung Rasulullah SAW dari Masjidil Haram ke Masjidil Aqsa dan naik ke Sidratul Muntaha';
-  const countdownActive = data.countdown?.active !== false;
+  const countdownDate = data?.countdown?.date || '2026-02-26T00:00:00';
+  const countdownName = data?.countdown?.name || "Isra Mi'raj Nabi Muhammad SAW";
+  const countdownDescription = data?.countdown?.description || 'Memperingati perjalanan agung Rasulullah SAW dari Masjidil Haram ke Masjidil Aqsa dan naik ke Sidratul Muntaha';
+  const countdownActive = data?.countdown?.active !== false;
 
   const timeLeft = useCountdown(countdownDate);
 
+  if (!data) return <CountdownSkeleton />;
   if (!countdownActive) return null;
 
   return (

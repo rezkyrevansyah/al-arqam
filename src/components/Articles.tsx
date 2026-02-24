@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Clock, User, ArrowUpRight, BookOpen } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatGoogleDriveUrl } from '../lib/utils';
@@ -90,7 +90,7 @@ export function Articles() {
             {/* Articles Grid - Equal height columns */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Featured Article - Stretches to match right column */}
-              <Link to={`/artikel/${featuredArticle.id}`}>
+              <Link href={`/artikel/${featuredArticle.id}`}>
             <motion.article
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -151,7 +151,7 @@ export function Articles() {
           {/* Other Articles - Equal height cards */}
           <div className="flex flex-col gap-4 h-full">
             {otherArticles.map((article, index) => (
-              <Link key={article.id} to={`/artikel/${article.id}`}>
+              <Link key={article.id} href={`/artikel/${article.id}`}>
                 <motion.article
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -212,7 +212,7 @@ export function Articles() {
             className="text-center mt-10"
           >
             <Link
-              to="/artikel"
+              href="/artikel"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--primary))] text-white rounded-full hover:bg-[hsl(var(--primary))]/90 transition-colors font-medium shadow-lg shadow-[hsl(var(--primary))]/20 hover:shadow-xl hover:shadow-[hsl(var(--primary))]/30"
             >
               <ArrowUpRight className="w-4 h-4" />

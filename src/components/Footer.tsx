@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from 'framer-motion';
 import {
   MapPin,
@@ -8,6 +10,7 @@ import {
   Youtube,
   Facebook
 } from 'lucide-react';
+import Image from 'next/image';
 import { useSiteData } from '../contexts/SiteDataContext';
 import type { SocialPlatform } from '../data/types';
 
@@ -109,11 +112,13 @@ export function Footer() {
             transition={{ duration: 0.5 }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden">
-                <img 
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden relative">
+                <Image 
                   src="/logo.png" 
                   alt="Logo Masjid Al-Arqom" 
-                  className="w-8 h-8 object-contain"
+                  width={32}
+                  height={32}
+                  className="object-contain"
                 />
               </div>
               <span className="font-display text-lg font-semibold">Masjid Al-Arqom</span>

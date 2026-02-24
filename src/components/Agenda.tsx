@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Clock, MapPin, ArrowRight, Calendar } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import type { AgendaCategory } from '../data/types';
@@ -165,7 +165,7 @@ export function Agenda() {
           className="text-center mt-12"
         >
           <Link
-            to="/agenda"
+            href="/agenda"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--primary))] text-white rounded-full hover:bg-[hsl(var(--primary))]/90 transition-colors font-medium shadow-lg shadow-[hsl(var(--primary))]/20 hover:shadow-xl hover:shadow-[hsl(var(--primary))]/30"
           >
             Lihat Semua Agenda

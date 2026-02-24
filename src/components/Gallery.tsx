@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ArrowRight } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatGoogleDriveUrl } from '../lib/utils';
@@ -30,11 +30,7 @@ function GallerySkeleton() {
 export function Gallery() {
   const { data } = useSiteData();
 
-  if (!data) return <GallerySkeleton />;
-
-  const galleryData = data.gallery || [];
-
-  // Only show first 8 photos on landing page
+  const galleryData = data?.gallery || [];
   const landingGallery = galleryData.slice(0, 8);
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -68,6 +64,8 @@ export function Gallery() {
     };
   }, [lightboxIndex, closeLightbox, navigateLightbox]);
 
+  if (!data) return <GallerySkeleton />;
+  
   return (
     <section id="galeri" className="relative py-24 md:py-32">
       <div className="max-w-6xl mx-auto px-6">
@@ -187,7 +185,7 @@ export function Gallery() {
               className="mt-10 text-center"
             >
               <Link
-                to="/galeri"
+                href="/galeri"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-full font-medium hover:opacity-90 transition-all hover:gap-3 group"
               >
                 Lihat Semua Galeri

@@ -1,23 +1,30 @@
+"use client";
+
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 
 export function useScrollToHash() {
-  const { hash } = useLocation();
-
   useEffect(() => {
-    if (hash) {
-      // Small delay to ensure DOM is rendered
-      const timeoutId = setTimeout(() => {
-        const element = document.querySelector(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+    // Handle initial hash on mount
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        // Small delay to ensure DOM is rendered
+        const timeoutId = setTimeout(() => {
+          const element = document.querySelector(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+        return () => clearTimeout(timeoutId);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    };
 
-      return () => clearTimeout(timeoutId);
-    } else {
-      // Scroll to top on page load/refresh when no hash
-      window.scrollTo(0, 0);
-    }
-  }, [hash]);
+    handleHashChange();
+
+    // Optional: Listen for hash changes if needed (Next.js Link scroll handles this usually, but good for safety)
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 }
