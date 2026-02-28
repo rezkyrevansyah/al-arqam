@@ -1,8 +1,10 @@
+"use client";
+
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Clock, User, ArrowUpRight, BookOpen } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
-import { formatGoogleDriveUrl } from '../lib/utils';
+import { formatImageUrl } from '../lib/utils';
 
 function ArticlesSkeleton() {
   return (
@@ -101,7 +103,7 @@ export function Articles() {
             {/* Image fills remaining space */}
             <div className="relative flex-1 min-h-[200px] overflow-hidden">
               <img
-                src={formatGoogleDriveUrl(featuredArticle.image)}
+                src={formatImageUrl(featuredArticle.image)}
                 alt={featuredArticle.title}
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -162,7 +164,7 @@ export function Articles() {
                 {/* Square image */}
                 <div className="relative w-24 sm:w-28 aspect-square flex-shrink-0 rounded-xl overflow-hidden">
                   <img
-                    src={formatGoogleDriveUrl(article.image)}
+                    src={formatImageUrl(article.image)}
                     alt={article.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"

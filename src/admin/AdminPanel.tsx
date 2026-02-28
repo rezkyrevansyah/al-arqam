@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import AdminLayout from './layouts/AdminLayout';
 import LoginPage from './pages/LoginPage';
@@ -12,17 +12,33 @@ import GalleryPage from './pages/GalleryPage';
 import DonationPage from './pages/DonationPage';
 import BoardPage from './pages/BoardPage';
 import FooterPage from './pages/FooterPage';
+import { supabase } from '../lib/supabase';
 
 function ProtectedRoutes() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = localStorage.getItem('admin_logged_in') === 'true' && !!localStorage.getItem('admin_token');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/admin/login', { replace: true });
-    }
-  }, [isLoggedIn, navigate, location.pathname]);
+    supabase.auth.getSession().then(({ data }) => {
+      setIsLoggedIn(!!data.session);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+      if (!session) navigate('/login', { replace: true });
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, [navigate, location.pathname]);
+
+  if (isLoggedIn === null) {
+    return (
+      <div className="h-full flex items-center justify-center bg-emerald-950">
+        <div className="w-8 h-8 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return null;
@@ -48,7 +64,7 @@ function ProtectedRoutes() {
               <Route path="/donasi" element={<DonationPage />} />
               <Route path="/pengurus" element={<BoardPage />} />
               <Route path="/footer" element={<FooterPage />} />
-              <Route path="*" element={<Navigate to="/admin" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AdminLayout>
         } />

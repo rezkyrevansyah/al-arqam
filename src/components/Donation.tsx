@@ -1,8 +1,10 @@
+"use client";
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Landmark, Copy, Check, QrCode, Download, X, Maximize2 } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
-import { formatGoogleDriveUrl } from '../lib/utils';
+import { formatImageUrl } from '../lib/utils';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -100,7 +102,7 @@ export function Donation() {
   const donationCollected = data?.donation?.donationCollected || 0;
   const donationTarget = data?.donation?.donationTarget || 100000000;
   const rawQrisUrl = data?.donation?.qrisImageUrl;
-  const qrisImageUrl = formatGoogleDriveUrl(rawQrisUrl);
+  const qrisImageUrl = formatImageUrl(rawQrisUrl);
   
   const progressPercent = donationTarget > 0 ? Math.min((donationCollected / donationTarget) * 100, 100) : 0;
 

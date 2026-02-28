@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, User, LogIn, Building2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Lock, Mail, LogIn, Building2, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { login } from '../../services/api';
 
 export default function LoginPage() {
@@ -19,12 +19,10 @@ export default function LoginPage() {
 
     try {
       const result = await login(username, password);
-      if (result.success && result.token) {
-        localStorage.setItem('admin_token', result.token);
-        localStorage.setItem('admin_logged_in', 'true');
-        navigate('/admin');
+      if (result.success) {
+        navigate('/');
       } else {
-        setError(result.message || 'Username atau password salah');
+        setError(result.message || 'Email atau password salah');
       }
     } catch (err) {
       setError('Gagal terhubung ke server: ' + (err as Error).message);
@@ -34,7 +32,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0C1B1A] via-emerald-900 to-emerald-950 flex items-center justify-center p-4">
+    <div className="h-full bg-gradient-to-br from-[#0C1B1A] via-emerald-900 to-emerald-950 flex items-center justify-center p-4 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-5">
         <div className="islamic-pattern absolute inset-0" />
       </div>
@@ -88,11 +86,11 @@ export default function LoginPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><User className="w-5 h-5" /></div>
-                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" placeholder="Masukkan username" required />
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><Mail className="w-5 h-5" /></div>
+                    <input type="email" value={username} onChange={(e) => setUsername(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" placeholder="Masukkan email admin" required />
                   </div>
                 </div>
                 <div>

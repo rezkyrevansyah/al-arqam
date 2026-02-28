@@ -1,9 +1,11 @@
+"use client";
+
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ArrowRight } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
-import { formatGoogleDriveUrl } from '../lib/utils';
+import { formatImageUrl } from '../lib/utils';
 
 function GallerySkeleton() {
   return (
@@ -104,7 +106,7 @@ export function Gallery() {
                 onClick={() => setLightboxIndex(0)}
               >
                 <img
-                  src={formatGoogleDriveUrl(landingGallery[0]?.image)}
+                  src={formatImageUrl(landingGallery[0]?.image)}
                   alt={landingGallery[0]?.title}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -148,7 +150,7 @@ export function Gallery() {
                   onClick={() => setLightboxIndex(index)}
                 >
                   <img
-                    src={formatGoogleDriveUrl(item.image)}
+                    src={formatImageUrl(item.image)}
                     alt={item.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -258,7 +260,7 @@ export function Gallery() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={formatGoogleDriveUrl(landingGallery[lightboxIndex].image)}
+                src={formatImageUrl(landingGallery[lightboxIndex].image)}
                 alt={landingGallery[lightboxIndex].title}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />

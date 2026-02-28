@@ -4,7 +4,6 @@ import { ArrowLeft, Save, Loader2, ChevronDown, ChevronUp, Eye } from 'lucide-re
 import { useAdmin } from '../store/admin-store';
 import RichTextEditor from '../components/RichTextEditor';
 import ImageUpload from '../components/ImageUpload';
-import { formatGoogleDriveUrl } from '../../lib/utils';
 
 export default function ArticleEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -41,8 +40,7 @@ export default function ArticleEditorPage() {
 
   const handleSave = async () => {
     if (!title || !date) return;
-    const sanitizedImage = formatGoogleDriveUrl(image);
-    const data = { title, excerpt, content, author, date, image: sanitizedImage, category };
+    const data = { title, excerpt, content, author, date, image, category };
 
     if (isEditing && id) {
       await updateArticle(id, data);
@@ -50,10 +48,10 @@ export default function ArticleEditorPage() {
       await addArticle(data);
     }
     setSaved(true);
-    setTimeout(() => navigate('/admin/artikel'), 800);
+    setTimeout(() => navigate('/artikel'), 800);
   };
 
-  const goBack = () => navigate('/admin/artikel');
+  const goBack = () => navigate('/artikel');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -155,6 +153,7 @@ export default function ArticleEditorPage() {
                   onChange={setImage}
                   label="Gambar Cover"
                   previewHeight="h-40"
+                  folder="articles"
                 />
               </div>
 

@@ -7,6 +7,18 @@ import {
 } from 'lucide-react';
 import type { AdminPage } from '../store/admin-store';
 
+const pagePathMap: Record<AdminPage, string> = {
+  dashboard: '/',
+  hero: '/hero',
+  countdown: '/countdown',
+  agenda: '/agenda',
+  artikel: '/artikel',
+  galeri: '/galeri',
+  donasi: '/donasi',
+  pengurus: '/pengurus',
+  footer: '/footer',
+};
+
 interface StatCardProps {
   label: string;
   value: string | number;
@@ -18,9 +30,10 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, color, bgColor, page }: StatCardProps) {
   const { setCurrentPage } = useAdmin();
+  const navigate = useNavigate();
   return (
     <button
-      onClick={() => setCurrentPage(page)}
+      onClick={() => { setCurrentPage(page); navigate(pagePathMap[page]); }}
       className="bg-white border border-gray-100 rounded-2xl p-5 text-left hover:shadow-lg hover:shadow-gray-100/50 hover:border-gray-200 transition-all duration-300 group"
     >
       <div className="flex items-start justify-between mb-4">
@@ -92,10 +105,10 @@ function QuickActions() {
   const navigate = useNavigate();
 
   const actions = [
-    { label: 'Tambah Agenda', page: 'agenda' as AdminPage, path: '/admin/agenda', icon: CalendarDays, color: 'text-blue-600 bg-blue-50' },
-    { label: 'Tulis Artikel', page: 'artikel' as AdminPage, path: '/admin/artikel', icon: Newspaper, color: 'text-amber-600 bg-amber-50' },
-    { label: 'Upload Foto', page: 'galeri' as AdminPage, path: '/admin/galeri', icon: Image, color: 'text-purple-600 bg-purple-50' },
-    { label: 'Update Donasi', page: 'donasi' as AdminPage, path: '/admin/donasi', icon: Heart, color: 'text-rose-600 bg-rose-50' },
+    { label: 'Tambah Agenda', page: 'agenda' as AdminPage, path: '/agenda', icon: CalendarDays, color: 'text-blue-600 bg-blue-50' },
+    { label: 'Tulis Artikel', page: 'artikel' as AdminPage, path: '/artikel', icon: Newspaper, color: 'text-amber-600 bg-amber-50' },
+    { label: 'Upload Foto', page: 'galeri' as AdminPage, path: '/galeri', icon: Image, color: 'text-purple-600 bg-purple-50' },
+    { label: 'Update Donasi', page: 'donasi' as AdminPage, path: '/donasi', icon: Heart, color: 'text-rose-600 bg-rose-50' },
   ];
 
   const handleClick = (page: AdminPage, path: string) => {

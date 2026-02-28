@@ -1,46 +1,48 @@
 import { useState, useRef, type ChangeEvent } from 'react';
-import { Upload, Link as LinkIcon, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
-import { formatGoogleDriveUrl } from '../../lib/utils';
+import { Upload, Link as LinkIcon, X, Image as ImageIcon, AlertCircle, Loader2 } from 'lucide-react';
+import { uploadImage, getStorageUrl, type ImageFolder } from '../../lib/supabase';
 
 interface ImageUploadProps {
   value: string;
   onChange: (url: string) => void;
   label?: string;
   previewHeight?: string;
+  folder?: ImageFolder;
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
-export default function ImageUpload({ value, onChange, label = "Gambar", previewHeight = "h-40" }: ImageUploadProps) {
+export default function ImageUpload({ value, onChange, label = "Gambar", previewHeight = "h-40", folder = 'gallery' }: ImageUploadProps) {
   const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('url');
   const [error, setError] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     setError('');
 
-    // Validate file type
     if (!ALLOWED_FORMATS.includes(file.type)) {
       setError('Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.');
       return;
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       setError('Ukuran file terlalu besar. Maksimal 5MB.');
       return;
     }
 
-    // Convert to base64 or object URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      onChange(result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      setIsUploading(true);
+      const path = await uploadImage(file, folder);
+      onChange(path);
+    } catch (err) {
+      setError('Upload gagal: ' + (err as Error).message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +78,8 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
       fileInputRef.current.value = '';
     }
   };
+
+  const previewUrl = getStorageUrl(value);
 
   return (
     <div className="space-y-3">
@@ -161,9 +165,17 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
               accept={ALLOWED_EXTENSIONS.join(',')}
               onChange={handleFileChange}
               className="hidden"
+              disabled={isUploading}
             />
 
-            {value ? (
+            {isUploading ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+                </div>
+                <p className="text-sm font-medium text-gray-700">Mengupload gambar...</p>
+              </div>
+            ) : value ? (
               <div className="flex flex-col items-center gap-2">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
                   <ImageIcon className="w-6 h-6 text-emerald-600" />
@@ -237,7 +249,7 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
           <p className="text-xs font-medium text-gray-600 mb-2">Preview:</p>
           <div className={`relative ${previewHeight} rounded-xl overflow-hidden bg-gray-100 border border-gray-200`}>
             <img
-              src={formatGoogleDriveUrl(value)}
+              src={previewUrl}
               alt="Preview"
               className="w-full h-full object-cover"
               onError={() => setError('Gagal memuat gambar. Periksa URL atau file.')}

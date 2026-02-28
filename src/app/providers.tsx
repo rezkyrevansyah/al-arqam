@@ -1,10 +1,11 @@
 "use client";
 
 import { SiteDataProvider } from '@/contexts/SiteDataContext';
+import type { AllSiteData } from '@/data/types';
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children, initialData }: { children: React.ReactNode; initialData?: AllSiteData }) {
   return (
-    <SiteDataProvider>
+    <SiteDataProvider initialData={initialData}>
       {children}
     </SiteDataProvider>
   );

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, User, Calendar, ChevronUp, Share2 } from 'lucide-react';
 import { useSiteData } from '@/contexts/SiteDataContext';
-import { formatGoogleDriveUrl } from '@/lib/utils';
+import { formatImageUrl } from '@/lib/utils';
 import { Article } from '@/data/types';
 
 export default function ArticleDetailPage() {
@@ -104,7 +104,7 @@ export default function ArticleDetailPage() {
         className="relative h-[40vh] md:h-[50vh] overflow-hidden"
       >
         <img
-          src={formatGoogleDriveUrl(article.image)}
+          src={formatImageUrl(article.image)}
           alt={article.title}
           className="w-full h-full object-cover"
         />
@@ -178,7 +178,7 @@ export default function ArticleDetailPage() {
                   >
                     <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden">
                       <img
-                        src={formatGoogleDriveUrl(relatedArticle.image)}
+                        src={formatImageUrl(relatedArticle.image)}
                         alt={relatedArticle.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />

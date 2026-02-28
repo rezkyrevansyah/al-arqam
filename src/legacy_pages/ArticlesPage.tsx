@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Home, Clock, User, ArrowUpRight, ChevronUp, Filter, BookOpen } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
-import { formatGoogleDriveUrl } from '../lib/utils';
+import { formatImageUrl } from '../lib/utils';
 
 export function ArticlesPage() {
   const { data, loading } = useSiteData();
@@ -119,7 +119,7 @@ export function ArticlesPage() {
                   {/* Image */}
                   <div className="relative h-48 flex-shrink-0 overflow-hidden">
                     <img
-                      src={formatGoogleDriveUrl(article.image)}
+                      src={formatImageUrl(article.image)}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAdmin, type BoardMember } from '../store/admin-store';
 import { Plus, Pencil, Trash2, X, Save, Users } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
-import { formatGoogleDriveUrl } from '../../lib/utils';
+import { getStorageUrl } from '../../lib/supabase';
 
 const empty = { name: '', title: '', image: '' };
 
@@ -21,8 +21,7 @@ export default function BoardPage() {
   const close = () => { setShowForm(false); setEditId(null); };
   const save = async () => {
     if (!form.name || !form.title) return;
-    const sanitizedForm = { ...form, image: formatGoogleDriveUrl(form.image) };
-    editId ? await updateBoardMember(editId, sanitizedForm) : await addBoardMember(sanitizedForm);
+    editId ? await updateBoardMember(editId, form) : await addBoardMember(form);
     close();
   };
 
@@ -53,6 +52,7 @@ export default function BoardPage() {
                 onChange={(url) => setForm({ ...form, image: url })}
                 label="Foto Pengurus"
                 previewHeight="h-48"
+                folder="board"
               />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
@@ -104,7 +104,7 @@ export default function BoardPage() {
               <span className="text-xs text-gray-300 w-6 text-center font-mono">{i + 1}</span>
               <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                 {m.image ? (
-                  <img src={formatGoogleDriveUrl(m.image)} alt="" className="w-full h-full object-cover" />
+                  <img src={getStorageUrl(m.image)} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Users className="w-5 h-5 text-gray-300" />

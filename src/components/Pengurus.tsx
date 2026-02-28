@@ -1,8 +1,10 @@
+"use client";
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Pause, Play, Users } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
-import { formatGoogleDriveUrl } from '../lib/utils';
+import { formatImageUrl } from '../lib/utils';
 
 function PengurusSkeleton() {
   return (
@@ -154,7 +156,7 @@ export function Pengurus() {
                 <div className="relative bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl overflow-hidden hover:border-[hsl(var(--primary))]/20 hover:shadow-xl hover:shadow-[hsl(var(--primary))]/5 transition-all duration-500">
                   <div className="relative h-64 overflow-hidden">
                     <img
-                      src={formatGoogleDriveUrl(member.image)}
+                      src={formatImageUrl(member.image)}
                       alt={member.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />

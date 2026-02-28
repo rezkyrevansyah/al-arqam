@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { AllSiteData } from '../data/types';
 import { fetchAllData } from '../services/api';
@@ -19,9 +21,9 @@ const SiteDataContext = createContext<SiteDataContextValue>({
 
 const CACHE_KEY = 'siteData';
 
-export function SiteDataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AllSiteData | null>(() => getCached<AllSiteData>(CACHE_KEY));
-  const [loading, setLoading] = useState(!getCached<AllSiteData>(CACHE_KEY));
+export function SiteDataProvider({ children, initialData }: { children: ReactNode; initialData?: AllSiteData }) {
+  const [data, setData] = useState<AllSiteData | null>(() => initialData ?? getCached<AllSiteData>(CACHE_KEY));
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
@@ -39,16 +41,20 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (initialData) {
+      // Data sudah ada dari server, cache dan tidak perlu fetch ulang
+      setCache(CACHE_KEY, initialData);
+      return;
+    }
     const cached = getCached<AllSiteData>(CACHE_KEY);
     if (cached) {
       setData(cached);
-      setLoading(false);
       // Refresh in background
       loadData();
     } else {
       loadData();
     }
-  }, [loadData]);
+  }, [loadData, initialData]);
 
   return (
     <SiteDataContext.Provider value={{ data, loading, error, refresh: loadData }}>

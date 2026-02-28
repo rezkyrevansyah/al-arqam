@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight, ZoomIn, Home, Calendar, Filter } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
-import { formatGoogleDriveUrl } from '../lib/utils';
+import { formatImageUrl } from '../lib/utils';
 
 export function GalleryPage() {
   const { data, loading } = useSiteData();
@@ -123,7 +123,7 @@ export function GalleryPage() {
               onClick={() => setLightboxIndex(index)}
             >
               <img
-                src={formatGoogleDriveUrl(item.image)}
+                src={formatImageUrl(item.image)}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
@@ -226,7 +226,7 @@ export function GalleryPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={formatGoogleDriveUrl(filteredData[lightboxIndex].image)}
+                src={formatImageUrl(filteredData[lightboxIndex].image)}
                 alt={filteredData[lightboxIndex].title}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />

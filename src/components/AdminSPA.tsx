@@ -15,10 +15,12 @@ export default function AdminSPA() {
   if (!mounted) return null;
 
   return (
-    <BrowserRouter basename="/admin">
-      <AdminProvider>
-        <AdminPanel />
-      </AdminProvider>
-    </BrowserRouter>
+    <div className="h-full">
+      <BrowserRouter basename="/admin">
+        <AdminProvider>
+          <AdminPanel />
+        </AdminProvider>
+      </BrowserRouter>
+    </div>
   );
 }

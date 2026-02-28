@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   if (isLoading && !isInitialized) {
     return (
-      <div className="min-h-screen bg-[#F6F6F4] flex items-center justify-center">
+      <div className="h-full bg-[#F6F6F4] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mx-auto mb-4" />
           <p className="text-sm text-gray-500">Memuat data...</p>
@@ -38,11 +38,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F6F4]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="h-full flex bg-[#F6F6F4]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <AdminSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <div className="transition-all duration-300" style={{ marginLeft: collapsed ? 72 : 260 }}>
-        <header className="sticky top-0 z-30 bg-[#F6F6F4]/80 backdrop-blur-xl border-b border-gray-200/50">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300" style={{ marginLeft: collapsed ? 72 : 260 }}>
+        <header className="flex-shrink-0 z-30 bg-[#F6F6F4]/80 backdrop-blur-xl border-b border-gray-200/50">
           <div className="flex items-center justify-between px-8 h-[72px]">
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider">Admin Panel</p>
@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        <main className="p-8">
+        <main className="flex-1 overflow-y-auto p-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

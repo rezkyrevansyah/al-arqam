@@ -1,21 +1,22 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin, type AdminPage } from '../store/admin-store';
+import { logout } from '../../services/api';
 import {
   LayoutDashboard, Type, Timer, CalendarDays, Newspaper,
   Image, Heart, Users, Globe, ChevronLeft, ChevronRight, LogOut,
 } from 'lucide-react';
 
 const menuItems: { key: AdminPage; label: string; icon: typeof LayoutDashboard; group?: string; path: string }[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Utama', path: '/admin' },
-  { key: 'hero', label: 'Hero Section', icon: Type, group: 'Konten', path: '/admin/hero' },
-  { key: 'countdown', label: 'Countdown', icon: Timer, group: 'Konten', path: '/admin/countdown' },
-  { key: 'agenda', label: 'Agenda', icon: CalendarDays, group: 'Konten', path: '/admin/agenda' },
-  { key: 'artikel', label: 'Artikel', icon: Newspaper, group: 'Konten', path: '/admin/artikel' },
-  { key: 'galeri', label: 'Galeri', icon: Image, group: 'Konten', path: '/admin/galeri' },
-  { key: 'donasi', label: 'Donasi', icon: Heart, group: 'Konten', path: '/admin/donasi' },
-  { key: 'pengurus', label: 'Pengurus DKM', icon: Users, group: 'Organisasi', path: '/admin/pengurus' },
-  { key: 'footer', label: 'Footer', icon: Globe, group: 'Pengaturan', path: '/admin/footer' },
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Utama', path: '/' },
+  { key: 'hero', label: 'Hero Section', icon: Type, group: 'Konten', path: '/hero' },
+  { key: 'countdown', label: 'Countdown', icon: Timer, group: 'Konten', path: '/countdown' },
+  { key: 'agenda', label: 'Agenda', icon: CalendarDays, group: 'Konten', path: '/agenda' },
+  { key: 'artikel', label: 'Artikel', icon: Newspaper, group: 'Konten', path: '/artikel' },
+  { key: 'galeri', label: 'Galeri', icon: Image, group: 'Konten', path: '/galeri' },
+  { key: 'donasi', label: 'Donasi', icon: Heart, group: 'Konten', path: '/donasi' },
+  { key: 'pengurus', label: 'Pengurus DKM', icon: Users, group: 'Organisasi', path: '/pengurus' },
+  { key: 'footer', label: 'Footer', icon: Globe, group: 'Pengaturan', path: '/footer' },
 ];
 
 interface Props {
@@ -34,7 +35,7 @@ export default function AdminSidebar({ collapsed, onToggle }: Props) {
     const menuItem = menuItems.find(item => item.path === path);
     if (menuItem && currentPage !== menuItem.key) {
       setCurrentPage(menuItem.key);
-    } else if (path === '/admin' && currentPage !== 'dashboard') {
+    } else if (path === '/' && currentPage !== 'dashboard') {
       setCurrentPage('dashboard');
     }
   }, [location.pathname, currentPage, setCurrentPage]);
@@ -50,9 +51,9 @@ export default function AdminSidebar({ collapsed, onToggle }: Props) {
     navigate(item.path);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_logged_in');
-    navigate('/admin/login');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (

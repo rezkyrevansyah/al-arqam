@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAdmin } from '../store/admin-store';
 import { Plus, Trash2, X, Save, Image, Calendar } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
-import { formatGoogleDriveUrl } from '../../lib/utils';
+import { getStorageUrl } from '../../lib/supabase';
 
 export default function GalleryPage() {
   const { galleryList, addGalleryItem, deleteGalleryItem, isSaving } = useAdmin();
@@ -12,9 +12,7 @@ export default function GalleryPage() {
 
   const handleSave = async () => {
     if (!form.title || !form.image) return;
-    // Sanitize URL before saving to ensure it's a direct link or clean formatted link
-    const sanitizedImage = formatGoogleDriveUrl(form.image);
-    await addGalleryItem({ ...form, image: sanitizedImage });
+    await addGalleryItem({ ...form });
     setForm({ title: '', image: '', date: new Date().toISOString().slice(0, 10) });
     setShowForm(false);
   };
@@ -47,10 +45,11 @@ export default function GalleryPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" placeholder="Nama kegiatan..." />
               </div>
               <ImageUpload
-                value={formatGoogleDriveUrl(form.image)}
+                value={form.image}
                 onChange={(url) => setForm({ ...form, image: url })}
                 label="Foto Galeri"
                 previewHeight="h-56"
+                folder="gallery"
               />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
@@ -94,7 +93,7 @@ export default function GalleryPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {galleryList.map(g => (
             <div key={g.id} className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all">
-              <img src={formatGoogleDriveUrl(g.image)} alt={g.title} className="h-44 w-full object-cover" />
+              <img src={getStorageUrl(g.image)} alt={g.title} className="h-44 w-full object-cover" />
               <div className="p-3">
                 <h3 className="text-xs font-semibold text-gray-800 truncate">{g.title}</h3>
                 <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">

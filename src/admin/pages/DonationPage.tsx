@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAdmin } from '../store/admin-store';
 import { Save, Landmark, TrendingUp, Loader2, QrCode } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
-import { formatGoogleDriveUrl } from '../../lib/utils';
+import { getStorageUrl } from '../../lib/supabase';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -13,18 +13,11 @@ export default function DonationPage() {
   const [form, setForm] = useState({ ...donation });
 
   const pct = form.donationTarget > 0 ? Math.min(Math.round((form.donationCollected / form.donationTarget) * 100), 100) : 0;
-  
-  const formattedQrisUrl = formatGoogleDriveUrl(form.qrisImageUrl);
+
+  const formattedQrisUrl = getStorageUrl(form.qrisImageUrl);
 
   const handleSave = async () => {
-    // Workaround for Apps Script backend:
-    // If we send empty string, backend preserves existing image.
-    // So we send '(kosong dulu)' to explicitely clear it.
-    const payload = { ...form };
-    if (!payload.qrisImageUrl) {
-      payload.qrisImageUrl = '(kosong dulu)';
-    }
-    await setDonation(payload);
+    await setDonation(form);
   };
 
   return (
@@ -85,10 +78,11 @@ export default function DonationPage() {
           
           <div>
             <ImageUpload
-              value={formattedQrisUrl}
+              value={form.qrisImageUrl}
               onChange={(url) => setForm({ ...form, qrisImageUrl: url })}
               label="Upload Gambar QRIS"
               previewHeight="h-64"
+              folder="donation"
             />
             <p className="text-xs text-gray-400 mt-2">Format: JPG, PNG. Maksimal 5MB.</p>
           </div>
