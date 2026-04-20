@@ -1,16 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createBrowserClient } from '@/utils/supabase/client';
 
-const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
-
-// Client-side client (dengan session persistence untuk admin auth)
-export const supabase = createClient(supabaseUrl, supabaseAnon, {
-  auth: {
-    persistSession: typeof window !== 'undefined',
-    storageKey: 'admin_session',
-    autoRefreshToken: typeof window !== 'undefined',
-  },
-});
+// Browser client untuk admin auth dan upload.
+export const supabase = createBrowserClient();
 
 const BUCKET = 'images-storage';
 

@@ -8,21 +8,16 @@ import { Pengurus } from '@/components/Pengurus';
 import { Donation } from '@/components/Donation';
 import { Footer } from '@/components/Footer';
 import { HomeClient } from '@/components/HomeClient';
-import { SiteDataProvider } from '@/contexts/SiteDataContext';
-import { fetchAllData } from '@/services/api';
+import { Providers } from './providers';
+import { getHomeSiteData } from '@/services/site-data.server';
 
 export const revalidate = 60;
 
 export default async function Home() {
-  let initialData;
-  try {
-    initialData = await fetchAllData();
-  } catch {
-    initialData = undefined;
-  }
+  const initialData = await getHomeSiteData();
 
   return (
-    <SiteDataProvider initialData={initialData}>
+    <Providers initialData={initialData}>
       <div className="min-h-screen bg-[hsl(var(--background))]">
         <HomeClient />
         <Navbar />
@@ -37,6 +32,6 @@ export default async function Home() {
         </main>
         <Footer />
       </div>
-    </SiteDataProvider>
+    </Providers>
   );
 }

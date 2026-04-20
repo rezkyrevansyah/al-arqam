@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans, Amiri } from "next/font/google"; // eslint-disable-line
 import "./globals.css";
-import { Providers } from "./providers";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -31,11 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${playfair.variable} ${jakarta.variable} ${amiri.variable}`}>
-       <body className="antialiased font-sans">
-        <Providers>
-          {children}
-        </Providers>
-      </body>
+      <body className="antialiased font-sans">{children}</body>
     </html>
   );
 }

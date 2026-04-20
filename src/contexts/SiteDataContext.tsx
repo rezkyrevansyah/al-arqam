@@ -1,63 +1,67 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import type { AllSiteData } from '../data/types';
-import { fetchAllData } from '../services/api';
-import { getCached, setCache } from '../services/cache';
 
 interface SiteDataContextValue {
-  data: AllSiteData | null;
+  data: AllSiteData;
   loading: boolean;
   error: string | null;
   refresh: () => void;
 }
 
+const EMPTY_SITE_DATA: AllSiteData = {
+  hero: {
+    title: '',
+    subtitle: '',
+    description: '',
+  },
+  countdown: {
+    name: '',
+    date: '',
+    description: '',
+    active: false,
+  },
+  agenda: [],
+  articles: [],
+  gallery: [],
+  board: [],
+  donation: {
+    bankAccountNumber: '',
+    bankAccountName: '',
+    bankName: '',
+    donationCollected: 0,
+    donationTarget: 0,
+    qrisImageUrl: '',
+  },
+  footer: {
+    address: '',
+    phone: '',
+    email: '',
+    mapsUrl: '',
+    socials: [],
+  },
+};
+
 const SiteDataContext = createContext<SiteDataContextValue>({
-  data: null,
-  loading: true,
+  data: EMPTY_SITE_DATA,
+  loading: false,
   error: null,
   refresh: () => {},
 });
 
-const CACHE_KEY = 'siteData';
-
-export function SiteDataProvider({ children, initialData }: { children: ReactNode; initialData?: AllSiteData }) {
-  const [data, setData] = useState<AllSiteData | null>(() => initialData ?? getCached<AllSiteData>(CACHE_KEY));
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await fetchAllData();
-      setData(result);
-      setCache(CACHE_KEY, result);
-    } catch (err) {
-      setError((err as Error).message || 'Gagal memuat data');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (initialData) {
-      // Data sudah ada dari server, cache dan tidak perlu fetch ulang
-      setCache(CACHE_KEY, initialData);
-      return;
-    }
-    const cached = getCached<AllSiteData>(CACHE_KEY);
-    if (cached) {
-      setData(cached);
-      // Refresh in background
-      loadData();
-    } else {
-      loadData();
-    }
-  }, [loadData, initialData]);
+export function SiteDataProvider({ children, initialData }: { children: ReactNode; initialData?: Partial<AllSiteData> }) {
+  const data: AllSiteData = {
+    ...EMPTY_SITE_DATA,
+    ...initialData,
+    hero: { ...EMPTY_SITE_DATA.hero, ...initialData?.hero },
+    countdown: { ...EMPTY_SITE_DATA.countdown, ...initialData?.countdown },
+    donation: { ...EMPTY_SITE_DATA.donation, ...initialData?.donation },
+    footer: { ...EMPTY_SITE_DATA.footer, ...initialData?.footer },
+  };
 
   return (
-    <SiteDataContext.Provider value={{ data, loading, error, refresh: loadData }}>
+    <SiteDataContext.Provider value={{ data, loading: false, error: null, refresh: () => {} }}>
       {children}
     </SiteDataContext.Provider>
   );
