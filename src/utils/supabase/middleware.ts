@@ -1,21 +1,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Supabase environment variables are not configured.");
-}
+import { getSupabaseEnv } from "./config";
 
 export const createClient = (request: NextRequest) => {
+  const { url, key } = getSupabaseEnv();
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
-  createServerClient(supabaseUrl, supabaseKey, {
+  createServerClient(url, key, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
