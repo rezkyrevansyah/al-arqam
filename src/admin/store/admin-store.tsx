@@ -393,6 +393,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         relatedLinkLabel: updated.relatedLinkLabel,
         relatedLinkUrl: updated.relatedLinkUrl,
         isPublished: updated.isPublished,
+        showDonors: updated.showDonors,
         sortOrder: updated.sortOrder,
         programType: updated.programType,
       });

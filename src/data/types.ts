@@ -132,6 +132,7 @@ export interface TransparencyProgram {
   relatedLinkLabel: string;
   relatedLinkUrl: string;
   isPublished: boolean;
+  showDonors: boolean;
   sortOrder: number;
   programType: ProgramType;
   metrics: TransparencyMetric[];
@@ -261,6 +262,7 @@ export interface InfaqTarawihEntry {
   malamKe: number;
   tanggal: string; // ISO date YYYY-MM-DD
   jumlah: number;
+  pengeluaran: number;
   catatan: string;
 }
 

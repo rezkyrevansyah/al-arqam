@@ -134,19 +134,41 @@ function ProgramSection({ program }: { program: TransparencyProgram }) {
           <p className="mt-4 font-display text-4xl font-bold text-[hsl(var(--gold-light))]">
             {formatCurrency(program.collectedAmount)}
           </p>
-          <p className="mt-2 text-sm text-[hsl(var(--primary-foreground))]/75">
-            Target {program.targetAmount > 0 ? formatCurrency(program.targetAmount) : "belum ditentukan"}
-          </p>
-          <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/15">
-            <div
-              className="h-full rounded-full bg-[hsl(var(--gold-light))] transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="mt-3 flex items-center justify-between text-sm">
-            <span>{progress.toFixed(1)}%</span>
-            <span>{program.donors.length} donatur tercatat</span>
-          </div>
+          {program.targetAmount > 0 ? (
+            <>
+              <p className="mt-2 text-sm text-[hsl(var(--primary-foreground))]/75">
+                Target {formatCurrency(program.targetAmount)}
+              </p>
+              <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/15">
+                <div
+                  className="h-full rounded-full bg-[hsl(var(--gold-light))] transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span>{progress.toFixed(1)}%</span>
+                <span>
+                  {program.programType === 'santunan_yatim'
+                    ? `${program.santunanEntries?.length ?? 0} donatur tercatat`
+                    : program.programType === 'infaq_tarawih'
+                    ? `${program.infaqEntries?.length ?? 0} malam tercatat`
+                    : program.programType === 'zis'
+                    ? `${program.zisEntries?.length ?? 0} muzakki tercatat`
+                    : `${program.donors.length} donatur tercatat`}
+                </span>
+              </div>
+            </>
+          ) : (
+            <p className="mt-4 text-sm text-[hsl(var(--primary-foreground))]/75">
+              {program.programType === 'santunan_yatim'
+                ? `${program.santunanEntries?.length ?? 0} donatur tercatat`
+                : program.programType === 'infaq_tarawih'
+                ? `${program.infaqEntries?.length ?? 0} malam tercatat`
+                : program.programType === 'zis'
+                ? `${program.zisEntries?.length ?? 0} muzakki tercatat`
+                : `${program.donors.length} donatur tercatat`}
+            </p>
+          )}
         </div>
       </div>
 
@@ -158,33 +180,35 @@ function ProgramSection({ program }: { program: TransparencyProgram }) {
         </div>
       )}
 
-      <div className="mt-8">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[hsl(var(--gold))]">
-              Transparansi Donatur
+      {program.showDonors && (
+        <div className="mt-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[hsl(var(--gold))]">
+                Transparansi Donatur
+              </p>
+              <h3 className="mt-2 font-display text-2xl font-bold text-[hsl(var(--foreground))]">
+                Daftar Donatur Tercatat
+              </h3>
+            </div>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              Data ini dapat diperbarui sewaktu-waktu oleh tim masjid.
             </p>
-            <h3 className="mt-2 font-display text-2xl font-bold text-[hsl(var(--foreground))]">
-              Daftar Donatur Tercatat
-            </h3>
           </div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            Data ini dapat diperbarui sewaktu-waktu oleh tim masjid.
-          </p>
-        </div>
 
-        {program.donors.length > 0 ? (
-          <div className="mt-5 grid gap-3">
-            {program.donors.map((donor) => (
-              <ProgramDonorRow key={donor.id} donor={donor} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-5 rounded-[1.6rem] border border-dashed border-[hsl(var(--border))] bg-white/60 px-5 py-8 text-center text-[hsl(var(--muted-foreground))]">
-            Belum ada daftar donatur yang dipublikasikan untuk program ini.
-          </div>
-        )}
-      </div>
+          {program.donors.length > 0 ? (
+            <div className="mt-5 grid gap-3">
+              {program.donors.map((donor) => (
+                <ProgramDonorRow key={donor.id} donor={donor} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-[1.6rem] border border-dashed border-[hsl(var(--border))] bg-white/60 px-5 py-8 text-center text-[hsl(var(--muted-foreground))]">
+              Belum ada daftar donatur yang dipublikasikan untuk program ini.
+            </div>
+          )}
+        </div>
+      )}
 
       {program.programType === "infaq_tarawih" && program.infaqEntries && program.infaqEntries.length > 0 && (
         <div className="mt-8">

@@ -46,6 +46,7 @@ function createEmptyProgram(seed?: Partial<TransparencyProgram>): Omit<Transpare
     relatedLinkLabel: seed?.relatedLinkLabel ?? '',
     relatedLinkUrl: seed?.relatedLinkUrl ?? '',
     isPublished: seed?.isPublished ?? false,
+    showDonors: seed?.showDonors ?? true,
     sortOrder: seed?.sortOrder ?? 0,
     programType: seed?.programType ?? 'generic',
   };
@@ -615,12 +616,29 @@ export default function TransparencyPage() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-gray-700">Target Dana</label>
-                      <CurrencyInput
-                        value={programForm.targetAmount}
-                        onChange={(val) => setProgramForm(prev => ({ ...prev, targetAmount: val }))}
-                        prefix="Rp"
-                      />
+                      <div className="mb-2 flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">Target Dana</label>
+                        <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-500">
+                          <input
+                            type="checkbox"
+                            checked={programForm.targetAmount > 0}
+                            onChange={(e) => setProgramForm(prev => ({ ...prev, targetAmount: e.target.checked ? 1 : 0 }))}
+                            className="h-3.5 w-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30"
+                          />
+                          Ada target
+                        </label>
+                      </div>
+                      {programForm.targetAmount > 0 ? (
+                        <CurrencyInput
+                          value={programForm.targetAmount}
+                          onChange={(val) => setProgramForm(prev => ({ ...prev, targetAmount: val }))}
+                          prefix="Rp"
+                        />
+                      ) : (
+                        <p className="rounded-xl border border-dashed border-gray-200 px-3 py-2 text-sm text-gray-400">
+                          Tidak ada target — hanya tampil nominal
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="mb-1 block text-sm font-medium text-gray-700">Urutan</label>
@@ -654,15 +672,26 @@ export default function TransparencyPage() {
                     </div>
                   </div>
 
-                  <label className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={programForm.isPublished}
-                      onChange={(e) => setProgramForm({ ...programForm, isPublished: e.target.checked })}
-                      className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30"
-                    />
-                    Tampilkan di website publik
-                  </label>
+                  <div className="mt-4 flex flex-wrap gap-5">
+                    <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={programForm.isPublished}
+                        onChange={(e) => setProgramForm({ ...programForm, isPublished: e.target.checked })}
+                        className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30"
+                      />
+                      Tampilkan di website publik
+                    </label>
+                    <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={programForm.showDonors ?? true}
+                        onChange={(e) => setProgramForm({ ...programForm, showDonors: e.target.checked })}
+                        className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30"
+                      />
+                      Tampilkan daftar donatur
+                    </label>
+                  </div>
                 </div>
 
                 <div className="space-y-4">

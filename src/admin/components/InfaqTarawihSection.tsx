@@ -13,6 +13,7 @@ const emptyEntry = (programId: string): Omit<InfaqTarawihEntry, 'id'> => ({
   malamKe: 1,
   tanggal: new Date().toISOString().slice(0, 10),
   jumlah: 0,
+  pengeluaran: 0,
   catatan: '',
 });
 
@@ -32,11 +33,13 @@ export function InfaqTarawihSection({ programId }: Props) {
   }, [programId, loadProgramEntries]);
 
   const totalInfaq = infaqEntries.reduce((sum, e) => sum + e.jumlah, 0);
+  const totalPengeluaran = infaqEntries.reduce((sum, e) => sum + e.pengeluaran, 0);
+  const saldoBersih = totalInfaq - totalPengeluaran;
 
   async function handleAdd() {
     if (!form.jumlah) return;
     await addInfaqEntry(form);
-    setForm(prev => ({ ...prev, malamKe: prev.malamKe + 1, jumlah: 0, catatan: '' }));
+    setForm(prev => ({ ...prev, malamKe: prev.malamKe + 1, jumlah: 0, pengeluaran: 0, catatan: '' }));
   }
 
   async function handleSaveEdit() {
@@ -48,21 +51,31 @@ export function InfaqTarawihSection({ programId }: Props) {
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Infaq Rutin Tarawih</p>
-          <h3 className="mt-2 text-lg font-semibold text-gray-900">Rekap Per Malam</h3>
+      <div className="mb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Infaq Rutin Tarawih</p>
+        <h3 className="mt-2 text-lg font-semibold text-gray-900">Rekap Per Malam</h3>
+      </div>
+
+      {/* Summary */}
+      <div className="mb-6 grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-center">
+          <p className="text-xs font-semibold text-emerald-600">Total Infaq Masuk</p>
+          <p className="mt-1 text-base font-bold text-emerald-700">{formatIDR(totalInfaq)}</p>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-500">Total</p>
-          <p className="text-lg font-bold text-emerald-700">{formatIDR(totalInfaq)}</p>
+        <div className="rounded-xl border border-red-100 bg-red-50 p-3 text-center">
+          <p className="text-xs font-semibold text-red-600">Total Pengeluaran</p>
+          <p className="mt-1 text-base font-bold text-red-700">{formatIDR(totalPengeluaran)}</p>
+        </div>
+        <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 text-center">
+          <p className="text-xs font-semibold text-blue-600">Saldo Bersih</p>
+          <p className="mt-1 text-base font-bold text-blue-700">{formatIDR(saldoBersih)}</p>
         </div>
       </div>
 
       {/* Add form */}
       <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 mb-6">
         <p className="mb-3 text-xs font-semibold text-emerald-700 uppercase tracking-wide">Tambah Data Malam</p>
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div>
             <label className="mb-1 block text-xs font-medium text-gray-600">Malam Ke-</label>
             <input
@@ -87,6 +100,14 @@ export function InfaqTarawihSection({ programId }: Props) {
             <CurrencyInput
               value={form.jumlah}
               onChange={val => setForm(prev => ({ ...prev, jumlah: val }))}
+              prefix="Rp"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Pengeluaran</label>
+            <CurrencyInput
+              value={form.pengeluaran}
+              onChange={val => setForm(prev => ({ ...prev, pengeluaran: val }))}
               prefix="Rp"
             />
           </div>
@@ -118,7 +139,9 @@ export function InfaqTarawihSection({ programId }: Props) {
               <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">
                 <th className="pb-3 pr-4">Malam</th>
                 <th className="pb-3 pr-4">Tanggal</th>
-                <th className="pb-3 pr-4">Jumlah</th>
+                <th className="pb-3 pr-4">Infaq Masuk</th>
+                <th className="pb-3 pr-4">Pengeluaran</th>
+                <th className="pb-3 pr-4">Saldo</th>
                 <th className="pb-3 pr-4">Catatan</th>
                 <th className="pb-3 text-right">Aksi</th>
               </tr>
@@ -141,8 +164,14 @@ export function InfaqTarawihSection({ programId }: Props) {
                       <td className="py-2 pr-4">
                         <CurrencyInput value={editForm.jumlah}
                           onChange={val => setEditForm(prev => prev ? { ...prev, jumlah: val } : prev)}
-                          prefix="Rp" className="w-40" />
+                          prefix="Rp" className="w-36" />
                       </td>
+                      <td className="py-2 pr-4">
+                        <CurrencyInput value={editForm.pengeluaran}
+                          onChange={val => setEditForm(prev => prev ? { ...prev, pengeluaran: val } : prev)}
+                          prefix="Rp" className="w-36" />
+                      </td>
+                      <td className="py-2 pr-4 text-gray-400">—</td>
                       <td className="py-2 pr-4">
                         <input value={editForm.catatan}
                           onChange={e => setEditForm(prev => prev ? { ...prev, catatan: e.target.value } : prev)}
@@ -160,7 +189,9 @@ export function InfaqTarawihSection({ programId }: Props) {
                       <td className="py-3 pr-4 font-medium">Malam ke-{entry.malamKe}</td>
                       <td className="py-3 pr-4 text-gray-600">{entry.tanggal}</td>
                       <td className="py-3 pr-4 font-semibold text-emerald-700">{formatIDR(entry.jumlah)}</td>
-                      <td className="py-3 pr-4 text-gray-500">{entry.catatan || '-'}</td>
+                      <td className="py-3 pr-4 font-semibold text-red-600">{entry.pengeluaran > 0 ? formatIDR(entry.pengeluaran) : '—'}</td>
+                      <td className="py-3 pr-4 font-semibold text-blue-700">{formatIDR(entry.jumlah - entry.pengeluaran)}</td>
+                      <td className="py-3 pr-4 text-gray-500 text-xs">{entry.catatan || '—'}</td>
                       <td className="py-3 text-right">
                         <button onClick={() => { setEditingId(entry.id); setEditForm(entry); }}
                           className="mr-2 rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50">Edit</button>
@@ -175,9 +206,11 @@ export function InfaqTarawihSection({ programId }: Props) {
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-gray-200 font-semibold">
+              <tr className="border-t-2 border-gray-200 font-semibold text-sm">
                 <td colSpan={2} className="pt-3 text-gray-500">Total ({infaqEntries.length} malam)</td>
                 <td className="pt-3 text-emerald-700">{formatIDR(totalInfaq)}</td>
+                <td className="pt-3 text-red-600">{formatIDR(totalPengeluaran)}</td>
+                <td className="pt-3 text-blue-700">{formatIDR(saldoBersih)}</td>
                 <td colSpan={2} />
               </tr>
             </tfoot>

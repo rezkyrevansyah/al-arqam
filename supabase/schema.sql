@@ -43,6 +43,14 @@ CREATE TABLE public.board_members (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT board_members_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.categories (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  entity_type text NOT NULL CHECK (entity_type = ANY (ARRAY['agenda'::text, 'article'::text, 'transparency'::text])),
+  name text NOT NULL,
+  color text DEFAULT '#6366f1'::text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT categories_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.countdown_config (
   lock boolean NOT NULL DEFAULT true CHECK (lock = true),
   name text NOT NULL DEFAULT ''::text,
@@ -83,6 +91,32 @@ CREATE TABLE public.hero_config (
   subtitle text NOT NULL DEFAULT ''::text,
   description text NOT NULL DEFAULT ''::text,
   CONSTRAINT hero_config_pkey PRIMARY KEY (lock)
+);
+CREATE TABLE public.infaq_tarawih_entries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  program_id uuid NOT NULL,
+  malam_ke integer NOT NULL,
+  tanggal date NOT NULL,
+  jumlah bigint NOT NULL DEFAULT 0,
+  catatan text DEFAULT ''::text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  pengeluaran bigint NOT NULL DEFAULT 0,
+  CONSTRAINT infaq_tarawih_entries_pkey PRIMARY KEY (id),
+  CONSTRAINT infaq_tarawih_entries_program_id_fkey FOREIGN KEY (program_id) REFERENCES public.transparency_programs(id)
+);
+CREATE TABLE public.santunan_yatim_entries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  program_id uuid NOT NULL,
+  nama_donatur text NOT NULL,
+  rt text NOT NULL,
+  jumlah_paket integer NOT NULL DEFAULT 1,
+  harga_paket bigint NOT NULL DEFAULT 200000,
+  catatan text DEFAULT ''::text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT santunan_yatim_entries_pkey PRIMARY KEY (id),
+  CONSTRAINT santunan_yatim_entries_program_id_fkey FOREIGN KEY (program_id) REFERENCES public.transparency_programs(id)
 );
 CREATE TABLE public.social_links (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -133,5 +167,30 @@ CREATE TABLE public.transparency_programs (
   is_published boolean NOT NULL DEFAULT false,
   sort_order integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  program_type text NOT NULL DEFAULT 'generic'::text CHECK (program_type = ANY (ARRAY['generic'::text, 'infaq_tarawih'::text, 'santunan_yatim'::text, 'zis'::text])),
   CONSTRAINT transparency_programs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.zis_entries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  program_id uuid NOT NULL,
+  tanggal date,
+  nama_petugas text DEFAULT ''::text,
+  nomor_resi text DEFAULT ''::text,
+  nama_muzakki text NOT NULL,
+  alamat text DEFAULT ''::text,
+  rt text DEFAULT ''::text,
+  zakat_fitrah_jiwa integer DEFAULT 0,
+  zakat_fitrah_uang bigint DEFAULT 0,
+  zakat_fitrah_beras_liter numeric DEFAULT 0,
+  zakat_fitrah_beras_kg numeric DEFAULT 0,
+  zakat_mal bigint DEFAULT 0,
+  infaq_sedekah bigint DEFAULT 0,
+  fidyah_jiwa integer DEFAULT 0,
+  fidyah_rp bigint DEFAULT 0,
+  lain_lain bigint DEFAULT 0,
+  catatan text DEFAULT ''::text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT zis_entries_pkey PRIMARY KEY (id),
+  CONSTRAINT zis_entries_program_id_fkey FOREIGN KEY (program_id) REFERENCES public.transparency_programs(id)
 );

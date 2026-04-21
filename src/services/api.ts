@@ -137,6 +137,7 @@ function toTransparencyProgram(
     relatedLinkLabel: row.related_link_label ?? '',
     relatedLinkUrl: row.related_link_url ?? '',
     isPublished: row.is_published ?? false,
+    showDonors: row.show_donors ?? true,
     sortOrder: row.sort_order ?? 0,
     programType: row.program_type ?? 'generic',
     metrics,
@@ -162,6 +163,7 @@ function toInfaqTarawihEntry(row: any): InfaqTarawihEntry {
     malamKe: Number(row.malam_ke ?? 0),
     tanggal: row.tanggal ?? '',
     jumlah: Number(row.jumlah ?? 0),
+    pengeluaran: Number(row.pengeluaran ?? 0),
     catatan: row.catatan ?? '',
   };
 }
@@ -614,6 +616,7 @@ export async function addTransparencyProgram(
       related_link_label: item.relatedLinkLabel,
       related_link_url: item.relatedLinkUrl,
       is_published: item.isPublished,
+      show_donors: item.showDonors,
       sort_order: item.sortOrder,
       program_type: item.programType ?? 'generic',
     })
@@ -644,6 +647,7 @@ export async function updateTransparencyProgram(
       related_link_label: item.relatedLinkLabel,
       related_link_url: item.relatedLinkUrl,
       is_published: item.isPublished,
+      show_donors: item.showDonors,
       sort_order: item.sortOrder,
       program_type: item.programType ?? 'generic',
     })
@@ -806,6 +810,7 @@ export async function addInfaqTarawihEntry(item: Omit<InfaqTarawihEntry, 'id'>):
       malam_ke: item.malamKe,
       tanggal: item.tanggal,
       jumlah: item.jumlah,
+      pengeluaran: item.pengeluaran,
       catatan: item.catatan,
     })
     .select('id')
@@ -818,7 +823,7 @@ export async function addInfaqTarawihEntry(item: Omit<InfaqTarawihEntry, 'id'>):
 export async function updateInfaqTarawihEntry(item: InfaqTarawihEntry): Promise<void> {
   const { error } = await supabase
     .from('infaq_tarawih_entries')
-    .update({ malam_ke: item.malamKe, tanggal: item.tanggal, jumlah: item.jumlah, catatan: item.catatan })
+    .update({ malam_ke: item.malamKe, tanggal: item.tanggal, jumlah: item.jumlah, pengeluaran: item.pengeluaran, catatan: item.catatan })
     .eq('id', item.id);
   throwOnError(error);
 }

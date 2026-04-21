@@ -65,6 +65,7 @@ function toTransparencyProgram(
     relatedLinkLabel: row.related_link_label ?? "",
     relatedLinkUrl: row.related_link_url ?? "",
     isPublished: row.is_published ?? false,
+    showDonors: row.show_donors ?? true,
     sortOrder: row.sort_order ?? 0,
     programType: (row.program_type ?? 'generic') as ProgramType,
     metrics,
@@ -83,6 +84,7 @@ function toInfaqTarawihEntry(row: any): InfaqTarawihEntry {
     malamKe: Number(row.malam_ke ?? 0),
     tanggal: row.tanggal ?? '',
     jumlah: Number(row.jumlah ?? 0),
+    pengeluaran: Number(row.pengeluaran ?? 0),
     catatan: row.catatan ?? '',
   };
 }
