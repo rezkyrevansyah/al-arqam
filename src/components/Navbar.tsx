@@ -4,42 +4,54 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Menu, X } from 'lucide-react';
 import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import { NAV_LINKS } from '../data/constants';
 
 export function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const isHomePage = pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
-      
-      const sections = ['agenda', 'artikel', 'galeri', 'tentang', 'donasi'];
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 150 && rect.bottom >= 150) {
-            setActiveSection(section);
-            break;
+
+      if (isHomePage) {
+        const sections = ['agenda', 'artikel', 'galeri', 'tentang', 'donasi'];
+        for (const section of sections) {
+          const element = document.getElementById(section);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            if (rect.top <= 150 && rect.bottom >= 150) {
+              setActiveSection(section);
+              break;
+            }
           }
         }
       }
     };
 
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isHomePage]);
 
-  const scrollToSection = (href: string) => {
+  const navigateTo = (href: string, sectionId?: string) => {
     setIsMobileMenuOpen(false);
-    const sectionId = href.replace('#', '');
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const top = element.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: 'smooth' });
+
+    if (sectionId && isHomePage) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        const top = element.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, behavior: 'smooth' });
+        return;
+      }
     }
+
+    router.push(href);
   };
 
   return (
@@ -58,7 +70,13 @@ export function Navbar() {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              onClick={() => {
+                if (isHomePage) {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  return;
+                }
+                router.push('/');
+              }}
               className="flex items-center gap-3 group"
             >
               <div className="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300 shadow-sm relative">
@@ -77,32 +95,38 @@ export function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1">
-              {NAV_LINKS.map((link) => (
-                <button
-                  key={link.href}
-                  onClick={() => scrollToSection(link.href)}
-                  className={`relative px-4 py-2 text-sm font-medium transition-colors duration-300 rounded-lg ${
-                    activeSection === link.href.replace('#', '')
-                      ? 'text-[hsl(var(--primary))]'
-                      : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
-                  }`}
-                >
-                  {link.label}
-                  {activeSection === link.href.replace('#', '') && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute inset-0 bg-[hsl(var(--primary))]/5 rounded-lg"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                </button>
-              ))}
+              {NAV_LINKS.map((link) => {
+                const isActive =
+                  (link.href === '/dashboard' && pathname === '/dashboard') ||
+                  (isHomePage && activeSection === link.sectionId);
+
+                return (
+                  <button
+                    key={link.href}
+                    onClick={() => navigateTo(link.href, link.sectionId)}
+                    className={`relative px-4 py-2 text-sm font-medium transition-colors duration-300 rounded-lg ${
+                      isActive
+                        ? 'text-[hsl(var(--primary))]'
+                        : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
+                    }`}
+                  >
+                    {link.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeNav"
+                        className="absolute inset-0 bg-[hsl(var(--primary))]/5 rounded-lg"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-3">
               <button
-                onClick={() => scrollToSection('#donasi')}
+                onClick={() => navigateTo('/#donasi', 'donasi')}
                 className="flex items-center gap-2 px-5 py-2.5 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-xl text-sm font-semibold hover:bg-[hsl(var(--primary))]/90 transition-all duration-300 hover:shadow-lg hover:shadow-[hsl(var(--primary))]/20 active:scale-95"
               >
                 <Heart className="w-4 h-4" />
@@ -144,7 +168,7 @@ export function Navbar() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  onClick={() => scrollToSection(link.href)}
+                  onClick={() => navigateTo(link.href, link.sectionId)}
                   className="block w-full text-left px-4 py-3 text-base font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] rounded-xl transition-colors"
                 >
                   {link.label}
@@ -154,7 +178,7 @@ export function Navbar() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
-                onClick={() => scrollToSection('#donasi')}
+                onClick={() => navigateTo('/#donasi', 'donasi')}
                 className="flex items-center gap-2 w-full px-4 py-3 mt-2 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-xl text-base font-semibold"
               >
                 <Heart className="w-4 h-4" />

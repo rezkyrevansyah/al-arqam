@@ -191,6 +191,18 @@ async function fetchGalleryUncached(): Promise<GalleryItem[]> {
   return (data ?? []).map(toGalleryItem);
 }
 
+async function fetchFooterUncached(): Promise<FooterData> {
+  const supabase = createClient();
+  const [footer, socials] = await Promise.all([
+    supabase.from("footer_config").select("address, phone, email, maps_url").single(),
+    supabase.from("social_links").select("platform, url"),
+  ]);
+
+  [footer, socials].forEach((result) => throwOnError(result.error));
+
+  return toFooter(footer.data, (socials.data ?? []) as SocialLink[]);
+}
+
 export const getHomeSiteData = unstable_cache(fetchHomeSiteDataUncached, ["home-site-data"], {
   revalidate: 60,
 });
@@ -205,4 +217,8 @@ export const getArticlesData = unstable_cache(fetchArticlesUncached, ["articles-
 
 export const getGalleryData = unstable_cache(fetchGalleryUncached, ["gallery-site-data"], {
   revalidate: 60,
+});
+
+export const getFooterData = unstable_cache(fetchFooterUncached, ["footer-site-data"], {
+  revalidate: 300,
 });

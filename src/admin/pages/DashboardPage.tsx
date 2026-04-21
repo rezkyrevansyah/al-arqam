@@ -15,6 +15,7 @@ const pagePathMap: Record<AdminPage, string> = {
   artikel: '/artikel',
   galeri: '/galeri',
   donasi: '/donasi',
+  transparansi: '/transparansi',
   pengurus: '/pengurus',
   footer: '/footer',
 };
@@ -108,7 +109,7 @@ function QuickActions() {
     { label: 'Tambah Agenda', page: 'agenda' as AdminPage, path: '/agenda', icon: CalendarDays, color: 'text-blue-600 bg-blue-50' },
     { label: 'Tulis Artikel', page: 'artikel' as AdminPage, path: '/artikel', icon: Newspaper, color: 'text-amber-600 bg-amber-50' },
     { label: 'Upload Foto', page: 'galeri' as AdminPage, path: '/galeri', icon: Image, color: 'text-purple-600 bg-purple-50' },
-    { label: 'Update Donasi', page: 'donasi' as AdminPage, path: '/donasi', icon: Heart, color: 'text-rose-600 bg-rose-50' },
+    { label: 'Kelola ZIS', page: 'transparansi' as AdminPage, path: '/transparansi', icon: Heart, color: 'text-rose-600 bg-rose-50' },
   ];
 
   const handleClick = (page: AdminPage, path: string) => {

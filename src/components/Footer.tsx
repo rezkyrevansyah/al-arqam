@@ -29,7 +29,14 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   facebook: Facebook,
 };
 
-const NAV_MENU = ['Agenda', 'Artikel', 'Galeri', 'Tentang', 'Donasi'];
+const NAV_MENU = [
+  { label: 'Agenda', href: '/#agenda' },
+  { label: 'Artikel', href: '/#artikel' },
+  { label: 'Galeri', href: '/#galeri' },
+  { label: 'Tentang', href: '/#tentang' },
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Donasi', href: '/#donasi' },
+];
 
 function FooterSkeleton() {
   const year = new Date().getFullYear();
@@ -169,11 +176,11 @@ export function Footer() {
             <div className="space-y-2.5">
               {NAV_MENU.map((item) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
+                  key={item.label}
+                  href={item.href}
                   className="block text-sm text-[hsl(var(--primary-foreground))]/70 hover:text-[hsl(var(--primary-foreground))] transition-colors"
                 >
-                  {item}
+                  {item.label}
                 </a>
               ))}
             </div>

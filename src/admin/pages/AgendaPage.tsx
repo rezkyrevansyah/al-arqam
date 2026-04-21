@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useAdmin, type Agenda } from '../store/admin-store';
 import { Plus, Pencil, Trash2, X, Save, CalendarDays, Clock, MapPin } from 'lucide-react';
+import { CategoryManager } from '../components/CategoryManager';
 
-const emptyForm = { title: '', date: '', time: '', location: '', description: '', category: 'kajian' as Agenda['category'] };
+const emptyForm = { title: '', date: '', time: '', location: '', description: '', category: '' };
 
 export default function AgendaPage() {
-  const { agendaList, addAgenda, updateAgenda, deleteAgenda, isSaving } = useAdmin();
+  const { agendaList, addAgenda, updateAgenda, deleteAgenda, isSaving, agendaCategories } = useAdmin();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -22,8 +23,10 @@ export default function AgendaPage() {
     close();
   };
 
-  const catLabel: Record<string, string> = { kajian: 'Kajian', sholat: 'Sholat', kegiatan: 'Kegiatan', rapat: 'Rapat' };
-  const catColor: Record<string, string> = { kajian: 'bg-emerald-50 text-emerald-700', sholat: 'bg-blue-50 text-blue-700', kegiatan: 'bg-amber-50 text-amber-700', rapat: 'bg-violet-50 text-violet-700' };
+  const getCatColor = (categoryName: string) => {
+    const cat = agendaCategories.find(c => c.name === categoryName);
+    return cat?.color ?? '#6b7280';
+  };
 
   return (
     <div className="space-y-8">
@@ -71,14 +74,16 @@ export default function AgendaPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <div className="flex gap-2">
-                  {(['kajian','sholat','kegiatan','rapat'] as const).map(cat => (
-                    <button key={cat} onClick={() => setForm({ ...form, category: cat })}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-medium border transition-all ${
-                        form.category === cat ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                      }`}>{catLabel[cat]}</button>
+                <select
+                  value={form.category}
+                  onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+                >
+                  <option value="">-- Pilih Kategori --</option>
+                  {agendaCategories.map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
-                </div>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
@@ -114,6 +119,9 @@ export default function AgendaPage() {
         </div>
       )}
 
+      {/* Category manager */}
+      <CategoryManager entityType="agenda" categories={agendaCategories} />
+
       {/* Agenda list */}
       <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
         {agendaList.length === 0 ? (
@@ -125,7 +133,7 @@ export default function AgendaPage() {
           <div className="divide-y divide-gray-50">
             {agendaList.map(a => (
               <div key={a.id} className="flex items-center gap-4 p-4 hover:bg-gray-50/50 transition-colors group">
-                <div className="flex flex-col items-center bg-gray-50 rounded-xl px-3 py-2 min-w-[3.5rem] flex-shrink-0">
+                <div className="flex flex-col items-center bg-gray-50 rounded-xl px-3 py-2 min-w-[3.5rem] shrink-0">
                   <span className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Playfair Display', serif" }}>
                     {new Date(a.date).getDate()}
                   </span>
@@ -136,8 +144,11 @@ export default function AgendaPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-sm font-semibold text-gray-800 truncate">{a.title}</h3>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${catColor[a.category]}`}>
-                      {catLabel[a.category]}
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 text-white"
+                      style={{ backgroundColor: getCatColor(a.category) }}
+                    >
+                      {a.category}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400">

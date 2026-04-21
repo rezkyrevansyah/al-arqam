@@ -3,6 +3,7 @@ import { useAdmin } from '../store/admin-store';
 import { Save, Landmark, TrendingUp, Loader2, QrCode } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
 import { getStorageUrl } from '../../lib/supabase';
+import { CurrencyInput } from '../components/CurrencyInput';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -101,13 +102,19 @@ export default function DonationPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Dana Terkumpul (Rp)</label>
-              <input type="number" value={form.donationCollected} onChange={e => setForm({ ...form, donationCollected: Number(e.target.value) })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" />
+              <CurrencyInput
+                value={form.donationCollected}
+                onChange={(val) => setForm(prev => ({ ...prev, donationCollected: val }))}
+                prefix="Rp"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Target (Rp)</label>
-              <input type="number" value={form.donationTarget} onChange={e => setForm({ ...form, donationTarget: Number(e.target.value) })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" />
+              <CurrencyInput
+                value={form.donationTarget}
+                onChange={(val) => setForm(prev => ({ ...prev, donationTarget: val }))}
+                prefix="Rp"
+              />
             </div>
           </div>
         </div>

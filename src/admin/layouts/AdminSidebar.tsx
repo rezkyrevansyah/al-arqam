@@ -4,7 +4,7 @@ import { useAdmin, type AdminPage } from '../store/admin-store';
 import { logout } from '../../services/api';
 import {
   LayoutDashboard, Type, Timer, CalendarDays, Newspaper,
-  Image, Heart, Users, Globe, ChevronLeft, ChevronRight, LogOut,
+  Image, Heart, Users, Globe, ChevronLeft, ChevronRight, LogOut, BarChart3,
 } from 'lucide-react';
 
 const menuItems: { key: AdminPage; label: string; icon: typeof LayoutDashboard; group?: string; path: string }[] = [
@@ -15,6 +15,7 @@ const menuItems: { key: AdminPage; label: string; icon: typeof LayoutDashboard; 
   { key: 'artikel', label: 'Artikel', icon: Newspaper, group: 'Konten', path: '/artikel' },
   { key: 'galeri', label: 'Galeri', icon: Image, group: 'Konten', path: '/galeri' },
   { key: 'donasi', label: 'Donasi', icon: Heart, group: 'Konten', path: '/donasi' },
+  { key: 'transparansi', label: 'Dashboard Transparansi', icon: BarChart3, group: 'Konten', path: '/transparansi' },
   { key: 'pengurus', label: 'Pengurus DKM', icon: Users, group: 'Organisasi', path: '/pengurus' },
   { key: 'footer', label: 'Footer', icon: Globe, group: 'Pengaturan', path: '/footer' },
 ];

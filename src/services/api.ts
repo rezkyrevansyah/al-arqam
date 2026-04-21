@@ -12,6 +12,14 @@ import type {
   DashboardData,
   ActivityLogItem,
   LoginResult,
+  TransparencyDonor,
+  TransparencyMetric,
+  TransparencyProgram,
+  Category,
+  CategoryEntityType,
+  InfaqTarawihEntry,
+  SantunanYatimEntry,
+  ZisEntry,
 } from '../data/types';
 
 // ── Row Mappers ───────────────────────────────────────────────
@@ -81,6 +89,121 @@ function toDonation(row: any): DonationConfig {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toTransparencyMetric(row: any): TransparencyMetric {
+  return {
+    id: row.id,
+    programId: row.program_id,
+    label: row.label,
+    value: Number(row.value ?? 0),
+    valueType: row.value_type,
+    suffix: row.suffix ?? '',
+    note: row.note ?? '',
+    sortOrder: row.sort_order ?? 0,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toTransparencyDonor(row: any): TransparencyDonor {
+  return {
+    id: row.id,
+    programId: row.program_id,
+    donorName: row.donor_name,
+    amount: Number(row.amount ?? 0),
+    donatedAt: row.donated_at ?? '',
+    note: row.note ?? '',
+    isAnonymous: row.is_anonymous ?? false,
+    sortOrder: row.sort_order ?? 0,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toTransparencyProgram(
+  row: any,
+  metrics: TransparencyMetric[],
+  donors: TransparencyDonor[],
+): TransparencyProgram {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    badge: row.badge ?? '',
+    category: row.category ?? '',
+    periodLabel: row.period_label ?? '',
+    year: Number(row.year ?? new Date().getFullYear()),
+    description: row.description ?? '',
+    progressLabel: row.progress_label ?? 'Dana Terkumpul',
+    collectedAmount: Number(row.collected_amount ?? 0),
+    targetAmount: Number(row.target_amount ?? 0),
+    relatedLinkLabel: row.related_link_label ?? '',
+    relatedLinkUrl: row.related_link_url ?? '',
+    isPublished: row.is_published ?? false,
+    sortOrder: row.sort_order ?? 0,
+    programType: row.program_type ?? 'generic',
+    metrics,
+    donors,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toCategory(row: any): Category {
+  return {
+    id: row.id,
+    entityType: row.entity_type,
+    name: row.name,
+    color: row.color ?? '#6366f1',
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toInfaqTarawihEntry(row: any): InfaqTarawihEntry {
+  return {
+    id: row.id,
+    programId: row.program_id,
+    malamKe: Number(row.malam_ke ?? 0),
+    tanggal: row.tanggal ?? '',
+    jumlah: Number(row.jumlah ?? 0),
+    catatan: row.catatan ?? '',
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toSantunanYatimEntry(row: any): SantunanYatimEntry {
+  return {
+    id: row.id,
+    programId: row.program_id,
+    namaDonatur: row.nama_donatur ?? '',
+    rt: row.rt ?? '',
+    jumlahPaket: Number(row.jumlah_paket ?? 1),
+    hargaPaket: Number(row.harga_paket ?? 200000),
+    catatan: row.catatan ?? '',
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toZisEntry(row: any): ZisEntry {
+  return {
+    id: row.id,
+    programId: row.program_id,
+    tanggal: row.tanggal ?? '',
+    namaPetugas: row.nama_petugas ?? '',
+    nomorResi: row.nomor_resi ?? '',
+    namaMuzakki: row.nama_muzakki ?? '',
+    alamat: row.alamat ?? '',
+    rt: row.rt ?? '',
+    zakatFitrahJiwa: Number(row.zakat_fitrah_jiwa ?? 0),
+    zakatFitrahUang: Number(row.zakat_fitrah_uang ?? 0),
+    zakatFitrahBerasLiter: Number(row.zakat_fitrah_beras_liter ?? 0),
+    zakatFitrahBerasKg: Number(row.zakat_fitrah_beras_kg ?? 0),
+    zakatMal: Number(row.zakat_mal ?? 0),
+    infaqSedekah: Number(row.infaq_sedekah ?? 0),
+    fidyahJiwa: Number(row.fidyah_jiwa ?? 0),
+    fidyahRp: Number(row.fidyah_rp ?? 0),
+    lainLain: Number(row.lain_lain ?? 0),
+    catatan: row.catatan ?? '',
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toFooter(row: any, socials: { platform: string; url: string }[]): FooterData {
   return {
     address: row.address,
@@ -108,6 +231,18 @@ function throwOnError(error: unknown) {
   if (error && typeof error === 'object' && 'message' in error) {
     throw new Error((error as { message: string }).message);
   }
+}
+
+function isSchemaMissingError(error: unknown) {
+  if (!error || typeof error !== 'object') return false;
+  const code = 'code' in error ? (error as { code?: string }).code : undefined;
+  const message = 'message' in error ? (error as { message?: string }).message ?? '' : '';
+  return (
+    code === '42P01' ||
+    code === '42703' ||
+    /does not exist/i.test(message) ||
+    /could not find the table/i.test(message)
+  );
 }
 
 async function logActivity(action: string, entity: string, entityId: string, description: string) {
@@ -227,6 +362,45 @@ export async function fetchFooter(): Promise<FooterData> {
   ]);
   throwOnError(footerRes.error);
   return toFooter(footerRes.data, socialsRes.data ?? []);
+}
+
+export async function fetchTransparencyPrograms(): Promise<TransparencyProgram[]> {
+  const [programsRes, metricsRes, donorsRes] = await Promise.all([
+    supabase
+      .from('transparency_programs')
+      .select('*')
+      .order('year', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('transparency_metrics')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('transparency_donors')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('donated_at', { ascending: false })
+      .order('created_at', { ascending: false }),
+  ]);
+
+  if ([programsRes, metricsRes, donorsRes].some((result) => isSchemaMissingError(result.error))) {
+    return [];
+  }
+
+  [programsRes, metricsRes, donorsRes].forEach((result) => throwOnError(result.error));
+
+  const metrics = (metricsRes.data ?? []).map(toTransparencyMetric);
+  const donors = (donorsRes.data ?? []).map(toTransparencyDonor);
+
+  return (programsRes.data ?? []).map((program) =>
+    toTransparencyProgram(
+      program,
+      metrics.filter((metric) => metric.programId === program.id),
+      donors.filter((donor) => donor.programId === program.id),
+    )
+  );
 }
 
 export async function fetchDashboard(): Promise<DashboardData> {
@@ -417,4 +591,359 @@ export async function saveFooter(data: FooterData): Promise<void> {
   }
 
   await logActivity('update', 'footer_config', 'singleton', 'Footer diperbarui');
+}
+
+// —— Admin Mutations - Transparency Dashboard ————————————————————————————————
+
+export async function addTransparencyProgram(
+  item: Omit<TransparencyProgram, 'id' | 'metrics' | 'donors'>
+): Promise<{ success: boolean; id: string }> {
+  const { data, error } = await supabase
+    .from('transparency_programs')
+    .insert({
+      slug: item.slug,
+      title: item.title,
+      badge: item.badge,
+      category: item.category,
+      period_label: item.periodLabel,
+      year: item.year,
+      description: item.description,
+      progress_label: item.progressLabel,
+      collected_amount: item.collectedAmount,
+      target_amount: item.targetAmount,
+      related_link_label: item.relatedLinkLabel,
+      related_link_url: item.relatedLinkUrl,
+      is_published: item.isPublished,
+      sort_order: item.sortOrder,
+      program_type: item.programType ?? 'generic',
+    })
+    .select('id')
+    .single();
+
+  throwOnError(error);
+  await logActivity('create', 'transparency_programs', data!.id, `Program transparansi ditambahkan: "${item.title}"`);
+  return { success: true, id: data!.id };
+}
+
+export async function updateTransparencyProgram(
+  item: Omit<TransparencyProgram, 'metrics' | 'donors'>
+): Promise<void> {
+  const { error } = await supabase
+    .from('transparency_programs')
+    .update({
+      slug: item.slug,
+      title: item.title,
+      badge: item.badge,
+      category: item.category,
+      period_label: item.periodLabel,
+      year: item.year,
+      description: item.description,
+      progress_label: item.progressLabel,
+      collected_amount: item.collectedAmount,
+      target_amount: item.targetAmount,
+      related_link_label: item.relatedLinkLabel,
+      related_link_url: item.relatedLinkUrl,
+      is_published: item.isPublished,
+      sort_order: item.sortOrder,
+      program_type: item.programType ?? 'generic',
+    })
+    .eq('id', item.id);
+
+  throwOnError(error);
+  await logActivity('update', 'transparency_programs', item.id, `Program transparansi diperbarui: "${item.title}"`);
+}
+
+export async function deleteTransparencyProgram(id: string): Promise<void> {
+  const { error } = await supabase.from('transparency_programs').delete().eq('id', id);
+  throwOnError(error);
+  await logActivity('delete', 'transparency_programs', id, 'Program transparansi dihapus');
+}
+
+export async function addTransparencyMetric(
+  item: Omit<TransparencyMetric, 'id'>
+): Promise<{ success: boolean; id: string }> {
+  const { data, error } = await supabase
+    .from('transparency_metrics')
+    .insert({
+      program_id: item.programId,
+      label: item.label,
+      value: item.value,
+      value_type: item.valueType,
+      suffix: item.suffix,
+      note: item.note,
+      sort_order: item.sortOrder,
+    })
+    .select('id')
+    .single();
+
+  throwOnError(error);
+  await logActivity('create', 'transparency_metrics', data!.id, `Metrik transparansi ditambahkan: "${item.label}"`);
+  return { success: true, id: data!.id };
+}
+
+export async function updateTransparencyMetric(item: TransparencyMetric): Promise<void> {
+  const { error } = await supabase
+    .from('transparency_metrics')
+    .update({
+      label: item.label,
+      value: item.value,
+      value_type: item.valueType,
+      suffix: item.suffix,
+      note: item.note,
+      sort_order: item.sortOrder,
+    })
+    .eq('id', item.id);
+
+  throwOnError(error);
+  await logActivity('update', 'transparency_metrics', item.id, `Metrik transparansi diperbarui: "${item.label}"`);
+}
+
+export async function deleteTransparencyMetric(id: string): Promise<void> {
+  const { error } = await supabase.from('transparency_metrics').delete().eq('id', id);
+  throwOnError(error);
+  await logActivity('delete', 'transparency_metrics', id, 'Metrik transparansi dihapus');
+}
+
+export async function addTransparencyDonor(
+  item: Omit<TransparencyDonor, 'id'>
+): Promise<{ success: boolean; id: string }> {
+  const { data, error } = await supabase
+    .from('transparency_donors')
+    .insert({
+      program_id: item.programId,
+      donor_name: item.donorName,
+      amount: item.amount,
+      donated_at: item.donatedAt || null,
+      note: item.note,
+      is_anonymous: item.isAnonymous,
+      sort_order: item.sortOrder,
+    })
+    .select('id')
+    .single();
+
+  throwOnError(error);
+  await logActivity('create', 'transparency_donors', data!.id, `Donatur transparansi ditambahkan: "${item.donorName}"`);
+  return { success: true, id: data!.id };
+}
+
+export async function updateTransparencyDonor(item: TransparencyDonor): Promise<void> {
+  const { error } = await supabase
+    .from('transparency_donors')
+    .update({
+      donor_name: item.donorName,
+      amount: item.amount,
+      donated_at: item.donatedAt || null,
+      note: item.note,
+      is_anonymous: item.isAnonymous,
+      sort_order: item.sortOrder,
+    })
+    .eq('id', item.id);
+
+  throwOnError(error);
+  await logActivity('update', 'transparency_donors', item.id, `Donatur transparansi diperbarui: "${item.donorName}"`);
+}
+
+export async function deleteTransparencyDonor(id: string): Promise<void> {
+  const { error } = await supabase.from('transparency_donors').delete().eq('id', id);
+  throwOnError(error);
+  await logActivity('delete', 'transparency_donors', id, 'Donatur transparansi dihapus');
+}
+
+// ── Admin - Categories ────────────────────────────────────────
+
+export async function fetchCategories(entityType: CategoryEntityType): Promise<Category[]> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('entity_type', entityType)
+    .order('name', { ascending: true });
+  if (isSchemaMissingError(error)) return [];
+  throwOnError(error);
+  return (data ?? []).map(toCategory);
+}
+
+export async function addCategory(item: Omit<Category, 'id'>): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('categories')
+    .insert({ entity_type: item.entityType, name: item.name, color: item.color })
+    .select('id')
+    .single();
+  throwOnError(error);
+  return { id: data!.id };
+}
+
+export async function updateCategory(item: Category): Promise<void> {
+  const { error } = await supabase
+    .from('categories')
+    .update({ name: item.name, color: item.color })
+    .eq('id', item.id);
+  throwOnError(error);
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const { error } = await supabase.from('categories').delete().eq('id', id);
+  throwOnError(error);
+}
+
+// ── Admin - Infaq Tarawih Entries ─────────────────────────────
+
+export async function fetchInfaqTarawihEntries(programId: string): Promise<InfaqTarawihEntry[]> {
+  const { data, error } = await supabase
+    .from('infaq_tarawih_entries')
+    .select('*')
+    .eq('program_id', programId)
+    .order('malam_ke', { ascending: true });
+  if (isSchemaMissingError(error)) return [];
+  throwOnError(error);
+  return (data ?? []).map(toInfaqTarawihEntry);
+}
+
+export async function addInfaqTarawihEntry(item: Omit<InfaqTarawihEntry, 'id'>): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('infaq_tarawih_entries')
+    .insert({
+      program_id: item.programId,
+      malam_ke: item.malamKe,
+      tanggal: item.tanggal,
+      jumlah: item.jumlah,
+      catatan: item.catatan,
+    })
+    .select('id')
+    .single();
+  throwOnError(error);
+  await logActivity('create', 'infaq_tarawih_entries', data!.id, `Infaq malam ke-${item.malamKe} ditambahkan`);
+  return { id: data!.id };
+}
+
+export async function updateInfaqTarawihEntry(item: InfaqTarawihEntry): Promise<void> {
+  const { error } = await supabase
+    .from('infaq_tarawih_entries')
+    .update({ malam_ke: item.malamKe, tanggal: item.tanggal, jumlah: item.jumlah, catatan: item.catatan })
+    .eq('id', item.id);
+  throwOnError(error);
+}
+
+export async function deleteInfaqTarawihEntry(id: string): Promise<void> {
+  const { error } = await supabase.from('infaq_tarawih_entries').delete().eq('id', id);
+  throwOnError(error);
+  await logActivity('delete', 'infaq_tarawih_entries', id, 'Entry infaq dihapus');
+}
+
+// ── Admin - Santunan Yatim Entries ────────────────────────────
+
+export async function fetchSantunanYatimEntries(programId: string): Promise<SantunanYatimEntry[]> {
+  const { data, error } = await supabase
+    .from('santunan_yatim_entries')
+    .select('*')
+    .eq('program_id', programId)
+    .order('created_at', { ascending: true });
+  if (isSchemaMissingError(error)) return [];
+  throwOnError(error);
+  return (data ?? []).map(toSantunanYatimEntry);
+}
+
+export async function addSantunanYatimEntry(item: Omit<SantunanYatimEntry, 'id'>): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('santunan_yatim_entries')
+    .insert({
+      program_id: item.programId,
+      nama_donatur: item.namaDonatur,
+      rt: item.rt,
+      jumlah_paket: item.jumlahPaket,
+      harga_paket: item.hargaPaket,
+      catatan: item.catatan,
+    })
+    .select('id')
+    .single();
+  throwOnError(error);
+  await logActivity('create', 'santunan_yatim_entries', data!.id, `Donatur santunan ${item.namaDonatur} ditambahkan`);
+  return { id: data!.id };
+}
+
+export async function updateSantunanYatimEntry(item: SantunanYatimEntry): Promise<void> {
+  const { error } = await supabase
+    .from('santunan_yatim_entries')
+    .update({ nama_donatur: item.namaDonatur, rt: item.rt, jumlah_paket: item.jumlahPaket, harga_paket: item.hargaPaket, catatan: item.catatan })
+    .eq('id', item.id);
+  throwOnError(error);
+}
+
+export async function deleteSantunanYatimEntry(id: string): Promise<void> {
+  const { error } = await supabase.from('santunan_yatim_entries').delete().eq('id', id);
+  throwOnError(error);
+  await logActivity('delete', 'santunan_yatim_entries', id, 'Entry santunan dihapus');
+}
+
+// ── Admin - ZIS Entries ───────────────────────────────────────
+
+export async function fetchZisEntries(programId: string): Promise<ZisEntry[]> {
+  const { data, error } = await supabase
+    .from('zis_entries')
+    .select('*')
+    .eq('program_id', programId)
+    .order('tanggal', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (isSchemaMissingError(error)) return [];
+  throwOnError(error);
+  return (data ?? []).map(toZisEntry);
+}
+
+export async function addZisEntry(item: Omit<ZisEntry, 'id'>): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('zis_entries')
+    .insert({
+      program_id: item.programId,
+      tanggal: item.tanggal || null,
+      nama_petugas: item.namaPetugas,
+      nomor_resi: item.nomorResi,
+      nama_muzakki: item.namaMuzakki,
+      alamat: item.alamat,
+      rt: item.rt,
+      zakat_fitrah_jiwa: item.zakatFitrahJiwa,
+      zakat_fitrah_uang: item.zakatFitrahUang,
+      zakat_fitrah_beras_liter: item.zakatFitrahBerasLiter,
+      zakat_fitrah_beras_kg: item.zakatFitrahBerasKg,
+      zakat_mal: item.zakatMal,
+      infaq_sedekah: item.infaqSedekah,
+      fidyah_jiwa: item.fidyahJiwa,
+      fidyah_rp: item.fidyahRp,
+      lain_lain: item.lainLain,
+      catatan: item.catatan,
+    })
+    .select('id')
+    .single();
+  throwOnError(error);
+  await logActivity('create', 'zis_entries', data!.id, `ZIS ${item.namaMuzakki} ditambahkan`);
+  return { id: data!.id };
+}
+
+export async function updateZisEntry(item: ZisEntry): Promise<void> {
+  const { error } = await supabase
+    .from('zis_entries')
+    .update({
+      tanggal: item.tanggal || null,
+      nama_petugas: item.namaPetugas,
+      nomor_resi: item.nomorResi,
+      nama_muzakki: item.namaMuzakki,
+      alamat: item.alamat,
+      rt: item.rt,
+      zakat_fitrah_jiwa: item.zakatFitrahJiwa,
+      zakat_fitrah_uang: item.zakatFitrahUang,
+      zakat_fitrah_beras_liter: item.zakatFitrahBerasLiter,
+      zakat_fitrah_beras_kg: item.zakatFitrahBerasKg,
+      zakat_mal: item.zakatMal,
+      infaq_sedekah: item.infaqSedekah,
+      fidyah_jiwa: item.fidyahJiwa,
+      fidyah_rp: item.fidyahRp,
+      lain_lain: item.lainLain,
+      catatan: item.catatan,
+    })
+    .eq('id', item.id);
+  throwOnError(error);
+}
+
+export async function deleteZisEntry(id: string): Promise<void> {
+  const { error } = await supabase.from('zis_entries').delete().eq('id', id);
+  throwOnError(error);
+  await logActivity('delete', 'zis_entries', id, 'Entry ZIS dihapus');
 }

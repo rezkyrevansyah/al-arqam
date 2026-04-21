@@ -11,7 +11,7 @@
 // ============================================
 // AGENDA / KEGIATAN
 // ============================================
-export type AgendaCategory = "kajian" | "sholat" | "kegiatan" | "rapat";
+export type AgendaCategory = string;
 
 export interface AgendaItem {
   id: string;
@@ -88,6 +88,61 @@ export interface DonationConfig {
   donationTarget: number;
   qrisImageUrl: string;
   qrisDriveFileId?: string;
+}
+
+// ============================================
+// DASHBOARD TRANSPARANSI
+// ============================================
+export type TransparencyMetricType = "currency" | "number";
+
+export interface TransparencyMetric {
+  id: string;
+  programId: string;
+  label: string;
+  value: number;
+  valueType: TransparencyMetricType;
+  suffix: string;
+  note: string;
+  sortOrder: number;
+}
+
+export interface TransparencyDonor {
+  id: string;
+  programId: string;
+  donorName: string;
+  amount: number;
+  donatedAt: string;
+  note: string;
+  isAnonymous: boolean;
+  sortOrder: number;
+}
+
+export interface TransparencyProgram {
+  id: string;
+  slug: string;
+  title: string;
+  badge: string;
+  category: string;
+  periodLabel: string;
+  year: number;
+  description: string;
+  progressLabel: string;
+  collectedAmount: number;
+  targetAmount: number;
+  relatedLinkLabel: string;
+  relatedLinkUrl: string;
+  isPublished: boolean;
+  sortOrder: number;
+  programType: ProgramType;
+  metrics: TransparencyMetric[];
+  donors: TransparencyDonor[];
+  infaqEntries?: InfaqTarawihEntry[];
+  santunanEntries?: SantunanYatimEntry[];
+  zisEntries?: ZisEntry[];
+}
+
+export interface TransparencyPageData {
+  programs: TransparencyProgram[];
 }
 
 // ============================================
@@ -178,4 +233,70 @@ export interface SiteConfig {
   logoPath: string;
   primaryColor: string;
   accentColor: string;
+}
+
+// ============================================
+// PROGRAM TYPE
+// ============================================
+export type ProgramType = 'generic' | 'infaq_tarawih' | 'santunan_yatim' | 'zis';
+
+// ============================================
+// CATEGORIES
+// ============================================
+export type CategoryEntityType = 'agenda' | 'article' | 'transparency';
+
+export interface Category {
+  id: string;
+  entityType: CategoryEntityType;
+  name: string;
+  color: string;
+}
+
+// ============================================
+// INFAQ TARAWIH ENTRIES
+// ============================================
+export interface InfaqTarawihEntry {
+  id: string;
+  programId: string;
+  malamKe: number;
+  tanggal: string; // ISO date YYYY-MM-DD
+  jumlah: number;
+  catatan: string;
+}
+
+// ============================================
+// SANTUNAN ANAK YATIM ENTRIES
+// ============================================
+export interface SantunanYatimEntry {
+  id: string;
+  programId: string;
+  namaDonatur: string;
+  rt: string;
+  jumlahPaket: number;
+  hargaPaket: number;
+  catatan: string;
+}
+
+// ============================================
+// ZIS ENTRIES
+// ============================================
+export interface ZisEntry {
+  id: string;
+  programId: string;
+  tanggal: string;
+  namaPetugas: string;
+  nomorResi: string;
+  namaMuzakki: string;
+  alamat: string;
+  rt: string;
+  zakatFitrahJiwa: number;
+  zakatFitrahUang: number;
+  zakatFitrahBerasLiter: number;
+  zakatFitrahBerasKg: number;
+  zakatMal: number;
+  infaqSedekah: number;
+  fidyahJiwa: number;
+  fidyahRp: number;
+  lainLain: number;
+  catatan: string;
 }

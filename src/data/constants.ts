@@ -1,7 +1,8 @@
 // Navigation links
 export const NAV_LINKS = [
-  { label: "Agenda", href: "#agenda" },
-  { label: "Artikel", href: "#artikel" },
-  { label: "Galeri", href: "#galeri" },
-  { label: "Tentang", href: "#tentang" },
+  { label: "Agenda", href: "/#agenda", sectionId: "agenda" },
+  { label: "Artikel", href: "/#artikel", sectionId: "artikel" },
+  { label: "Galeri", href: "/#galeri", sectionId: "galeri" },
+  { label: "Tentang", href: "/#tentang", sectionId: "tentang" },
+  { label: "Dashboard", href: "/dashboard" },
 ];

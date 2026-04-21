@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { useAdmin } from '../store/admin-store';
+import { CategoryManager } from '../components/CategoryManager';
 import RichTextEditor from '../components/RichTextEditor';
 import ImageUpload from '../components/ImageUpload';
 
 export default function ArticleEditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { articleList, addArticle, updateArticle, isSaving } = useAdmin();
+  const { articleList, addArticle, updateArticle, isSaving, articleCategories } = useAdmin();
   const isEditing = Boolean(id);
 
   const [title, setTitle] = useState('');
@@ -157,19 +158,25 @@ export default function ArticleEditorPage() {
                 />
               </div>
 
+              {/* Category manager */}
+              <CategoryManager entityType="article" categories={articleCategories} />
+
               {/* Meta Fields */}
               <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
                 <h3 className="text-sm font-semibold text-gray-700">Detail</h3>
 
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1.5">Kategori</label>
-                  <input
-                    type="text"
+                  <select
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Artikel Islami"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                  />
+                    onChange={e => setCategory(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+                  >
+                    <option value="">-- Pilih Kategori --</option>
+                    {articleCategories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

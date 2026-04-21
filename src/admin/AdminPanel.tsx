@@ -10,6 +10,7 @@ import ArticlePage from './pages/ArticlePage';
 import ArticleEditorPage from './pages/ArticleEditorPage';
 import GalleryPage from './pages/GalleryPage';
 import DonationPage from './pages/DonationPage';
+import TransparencyPage from './pages/TransparencyPage';
 import BoardPage from './pages/BoardPage';
 import FooterPage from './pages/FooterPage';
 import { supabase } from '../lib/supabase';
@@ -62,6 +63,7 @@ function ProtectedRoutes() {
               <Route path="/artikel" element={<ArticlePage />} />
               <Route path="/galeri" element={<GalleryPage />} />
               <Route path="/donasi" element={<DonationPage />} />
+              <Route path="/transparansi" element={<TransparencyPage />} />
               <Route path="/pengurus" element={<BoardPage />} />
               <Route path="/footer" element={<FooterPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

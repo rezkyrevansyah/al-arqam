@@ -109,7 +109,7 @@ export function Countdown() {
   return (
     <section className="relative py-16 md:py-20 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--background))] via-[hsl(var(--primary))]/[0.02] to-[hsl(var(--background))]" />
-      
+
       <div className="relative max-w-4xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
