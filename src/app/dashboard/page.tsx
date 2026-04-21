@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, ExternalLink, HeartHandshake, Layers3, TrendingUp, Users } from "lucide-react";
+import { BarChart3, ExternalLink, HeartHandshake, Layers3, TrendingUp } from "lucide-react";
 
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
@@ -238,7 +238,6 @@ export default async function DashboardPage() {
   ]);
 
   const totalPrograms = transparencyData.programs.length;
-  const totalDonors = transparencyData.programs.reduce((sum, program) => sum + program.donors.length, 0);
   const totalCollected = transparencyData.programs.reduce((sum, program) => sum + program.collectedAmount, 0);
 
   return (
@@ -282,7 +281,7 @@ export default async function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                     <div className="rounded-[1.6rem] border border-[hsl(var(--border))]/70 bg-white/80 p-5">
                       <div className="flex items-center gap-3 text-[hsl(var(--gold))]">
                         <Layers3 className="h-5 w-5" />
@@ -293,21 +292,15 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="rounded-[1.6rem] border border-[hsl(var(--border))]/70 bg-white/80 p-5">
-                      <div className="flex items-center gap-3 text-[hsl(var(--primary))]">
-                        <Users className="h-5 w-5" />
-                        <span className="text-sm font-semibold uppercase tracking-[0.18em]">Donatur</span>
-                      </div>
-                      <p className="mt-4 font-display text-4xl font-bold text-[hsl(var(--foreground))]">
-                        {new Intl.NumberFormat("id-ID").format(totalDonors)}
-                      </p>
-                    </div>
-                    <div className="rounded-[1.6rem] border border-[hsl(var(--border))]/70 bg-white/80 p-5">
                       <div className="flex items-center gap-3 text-[hsl(var(--gold))]">
                         <TrendingUp className="h-5 w-5" />
                         <span className="text-sm font-semibold uppercase tracking-[0.18em]">Terkumpul</span>
                       </div>
                       <p className="mt-4 font-display text-3xl font-bold leading-tight text-[hsl(var(--foreground))]">
                         {formatCurrency(totalCollected)}
+                      </p>
+                      <p className="mt-2 text-xs leading-relaxed text-[hsl(var(--muted-foreground))]">
+                        *Akumulatif pengumpulan dari semua program dan bukan saldo akhir masjid
                       </p>
                     </div>
                   </div>

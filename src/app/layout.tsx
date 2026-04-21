@@ -21,6 +21,10 @@ const amiri = Amiri({
 export const metadata: Metadata = {
   title: "Masjid Jami' Al-Arqom",
   description: "Website Resmi Masjid Jami' Al-Arqom",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
