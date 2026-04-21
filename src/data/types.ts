@@ -133,6 +133,7 @@ export interface TransparencyProgram {
   relatedLinkUrl: string;
   isPublished: boolean;
   showDonors: boolean;
+  showMuzakkiList: boolean;
   sortOrder: number;
   programType: ProgramType;
   metrics: TransparencyMetric[];

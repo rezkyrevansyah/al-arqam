@@ -138,6 +138,7 @@ function toTransparencyProgram(
     relatedLinkUrl: row.related_link_url ?? '',
     isPublished: row.is_published ?? false,
     showDonors: row.show_donors ?? true,
+    showMuzakkiList: row.show_muzakki_list ?? true,
     sortOrder: row.sort_order ?? 0,
     programType: row.program_type ?? 'generic',
     metrics,
@@ -233,6 +234,17 @@ function throwOnError(error: unknown) {
   if (error && typeof error === 'object' && 'message' in error) {
     throw new Error((error as { message: string }).message);
   }
+}
+
+const SUPPORTED_SOCIAL_PLATFORMS = new Set(['instagram', 'youtube', 'facebook', 'tiktok']);
+
+function sanitizeSocialLinks(socials: FooterData['socials']): FooterData['socials'] {
+  return socials
+    .map((social) => ({
+      platform: social.platform,
+      url: social.url.trim(),
+    }))
+    .filter((social) => SUPPORTED_SOCIAL_PLATFORMS.has(social.platform) && social.url.length > 0);
 }
 
 function isSchemaMissingError(error: unknown) {
@@ -572,8 +584,15 @@ export async function saveDonation(data: DonationConfig): Promise<{ success: boo
 // ── Admin Mutations - Footer ──────────────────────────────────
 
 export async function saveFooter(data: FooterData): Promise<void> {
+  const socials = sanitizeSocialLinks(data.socials);
   const { error: footerError } = await supabase.from('footer_config').upsert(
-    { lock: true, address: data.address, phone: data.phone, email: data.email, maps_url: data.mapsUrl },
+    {
+      lock: true,
+      address: data.address.trim(),
+      phone: data.phone.trim(),
+      email: data.email.trim(),
+      maps_url: data.mapsUrl.trim(),
+    },
     { onConflict: 'lock' }
   );
   throwOnError(footerError);
@@ -582,13 +601,13 @@ export async function saveFooter(data: FooterData): Promise<void> {
   const { error: delError } = await supabase
     .from('social_links')
     .delete()
-    .gte('id', '00000000-0000-0000-0000-000000000000');
+    .not('id', 'is', null);
   throwOnError(delError);
 
-  if (data.socials.length > 0) {
+  if (socials.length > 0) {
     const { error: insertError } = await supabase
       .from('social_links')
-      .insert(data.socials.map(s => ({ platform: s.platform, url: s.url })));
+      .insert(socials.map((social) => ({ platform: social.platform, url: social.url })));
     throwOnError(insertError);
   }
 
@@ -617,6 +636,7 @@ export async function addTransparencyProgram(
       related_link_url: item.relatedLinkUrl,
       is_published: item.isPublished,
       show_donors: item.showDonors,
+      show_muzakki_list: item.showMuzakkiList,
       sort_order: item.sortOrder,
       program_type: item.programType ?? 'generic',
     })
@@ -648,6 +668,7 @@ export async function updateTransparencyProgram(
       related_link_url: item.relatedLinkUrl,
       is_published: item.isPublished,
       show_donors: item.showDonors,
+      show_muzakki_list: item.showMuzakkiList,
       sort_order: item.sortOrder,
       program_type: item.programType ?? 'generic',
     })

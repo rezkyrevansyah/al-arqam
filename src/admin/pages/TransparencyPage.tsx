@@ -47,6 +47,7 @@ function createEmptyProgram(seed?: Partial<TransparencyProgram>): Omit<Transpare
     relatedLinkUrl: seed?.relatedLinkUrl ?? '',
     isPublished: seed?.isPublished ?? false,
     showDonors: seed?.showDonors ?? true,
+    showMuzakkiList: seed?.showMuzakkiList ?? true,
     sortOrder: seed?.sortOrder ?? 0,
     programType: seed?.programType ?? 'generic',
   };
@@ -400,6 +401,7 @@ export default function TransparencyPage() {
       relatedLinkUrl: selectedProgram.relatedLinkUrl,
       isPublished: selectedProgram.isPublished,
       showDonors: selectedProgram.showDonors ?? true,
+      showMuzakkiList: selectedProgram.showMuzakkiList ?? true,
       sortOrder: selectedProgram.sortOrder,
       programType: selectedProgram.programType,
     });
@@ -692,7 +694,23 @@ export default function TransparencyPage() {
                       />
                       Tampilkan daftar donatur
                     </label>
+                    {programForm.programType === 'zis' && (
+                      <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={programForm.showMuzakkiList ?? true}
+                          onChange={(e) => setProgramForm({ ...programForm, showMuzakkiList: e.target.checked })}
+                          className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30"
+                        />
+                        Tampilkan daftar muzakki
+                      </label>
+                    )}
                   </div>
+                  {programForm.programType === 'zis' && (
+                    <p className="mt-3 text-sm text-gray-500">
+                      Jika dinonaktifkan, tabel daftar muzakki di halaman publik akan disembunyikan, tetapi ringkasan angka dan grafik ZIS tetap tampil.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-4">

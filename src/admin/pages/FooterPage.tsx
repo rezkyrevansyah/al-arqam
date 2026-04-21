@@ -1,13 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAdmin } from '../store/admin-store';
 import { Save, MapPin, Phone, Mail, Plus, Trash2, Globe, Loader2 } from 'lucide-react';
 import type { SocialPlatform } from '../../data/types';
+
+const SOCIAL_PLATFORM_OPTIONS: Array<{ value: SocialPlatform; label: string }> = [
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'tiktok', label: 'TikTok' },
+];
 
 export default function FooterPage() {
   const { footer, setFooter, isSaving } = useAdmin();
   const [form, setForm] = useState({ ...footer });
 
-  const handleSave = async () => { await setFooter(form); };
+  useEffect(() => {
+    setForm({ ...footer });
+  }, [footer]);
+
+  const handleSave = async () => {
+    const cleanedSocials = form.socials
+      .map((social) => ({
+        platform: social.platform,
+        url: social.url.trim(),
+      }))
+      .filter((social) => social.url.length > 0);
+
+    await setFooter({
+      ...form,
+      address: form.address.trim(),
+      phone: form.phone.trim(),
+      email: form.email.trim(),
+      mapsUrl: form.mapsUrl.trim(),
+      socials: cleanedSocials,
+    });
+  };
 
   const addSocial = () => {
     setForm({ ...form, socials: [...form.socials, { platform: 'instagram' as SocialPlatform, url: '' }] });
@@ -103,12 +130,9 @@ export default function FooterPage() {
                 <select value={s.platform} onChange={e => updateSocial(i, 'platform', e.target.value)}
                   className="w-32 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
                   <option value="">Pilih...</option>
-                  <option value="instagram">Instagram</option>
-                  <option value="youtube">YouTube</option>
-                  <option value="facebook">Facebook</option>
-                  <option value="tiktok">TikTok</option>
-                  <option value="twitter">Twitter/X</option>
-                  <option value="whatsapp">WhatsApp</option>
+                  {SOCIAL_PLATFORM_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
                 <input type="text" value={s.url} onChange={e => updateSocial(i, 'url', e.target.value)}
                   className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"

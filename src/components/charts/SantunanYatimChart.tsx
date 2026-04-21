@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell,
 } from 'recharts';
 import type { SantunanYatimEntry } from '@/data/types';
 import { FullscreenChart } from './FullscreenChart';
@@ -80,10 +80,15 @@ export function SantunanYatimChart({ entries }: Props) {
   function handleSearch(q: string) { setSearch(q); setPage(1); }
   function handleFilterRt(rt: string) { setFilterRt(rt); setPage(1); }
 
+  function formatPaketLabel(value?: number, percent?: number) {
+    if (value == null || percent == null || percent < 0.08) return '';
+    return `${value}`;
+  }
+
   return (
     <div className="space-y-6">
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { label: 'Total Donatur', value: `${entries.length} orang`, color: 'text-indigo-700', bg: 'bg-indigo-50', border: 'border-indigo-100' },
           { label: 'Total Paket', value: `${totalPaket} paket`, color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100' },
@@ -121,21 +126,63 @@ export function SantunanYatimChart({ entries }: Props) {
         <FullscreenChart title="Proporsi Paket per RT">
           {(fs) => (
             <div className={`rounded-[1.5rem] border border-[hsl(var(--border))]/70 bg-white/75 p-5 shadow-sm ${fs ? 'h-full flex flex-col' : ''}`}>
-              {!fs && <p className="mb-4 text-sm font-semibold">Proporsi Paket per RT</p>}
-              <ResponsiveContainer width="100%" height={fs ? '100%' : 240}>
-                <PieChart>
-                  <Pie data={byRt} dataKey="paket" nameKey="label" cx="50%" cy="50%" outerRadius={fs ? 130 : 80}
-                    label={({ name, value }: { name?: string; value?: number }) =>
-                      name && value != null ? `${name}: ${value}` : ''
-                    }
-                    labelLine={false}
-                  >
-                    {byRt.map((g) => <Cell key={g.rt} fill={g.color} />)}
-                  </Pie>
-                  <Legend formatter={v => v} />
-                  <Tooltip formatter={(v) => [`${v} paket`]} />
-                </PieChart>
-              </ResponsiveContainer>
+              {!fs && <p className="mb-1 text-sm font-semibold">Proporsi Paket per RT</p>}
+              {!fs && <p className="mb-4 text-xs text-[hsl(var(--muted-foreground))]">Setiap irisan menunjukkan jumlah paket per RT.</p>}
+
+              <div className={fs ? 'flex flex-1 flex-col' : 'space-y-4'}>
+                <div className={`relative ${fs ? 'min-h-[420px] flex-1' : 'h-[260px]'}`}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={byRt}
+                        dataKey="paket"
+                        nameKey="label"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={fs ? 82 : 56}
+                        outerRadius={fs ? 138 : 92}
+                        paddingAngle={3}
+                        stroke="rgba(255,255,255,0.92)"
+                        strokeWidth={3}
+                        label={({ value, percent }: { value?: number; percent?: number }) => formatPaketLabel(value, percent)}
+                        labelLine={false}
+                      >
+                        {byRt.map((group) => (
+                          <Cell key={group.rt} fill={group.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [`${value} paket`, 'Jumlah paket']} />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="rounded-full bg-white/90 px-5 py-4 text-center shadow-sm ring-1 ring-black/5 backdrop-blur">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))]">
+                        Total Paket
+                      </p>
+                      <p className="mt-1 font-display text-2xl font-bold text-[hsl(var(--foreground))]">
+                        {totalPaket}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {byRt.map((group) => (
+                    <div
+                      key={group.rt}
+                      className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))]/60 bg-white/80 px-3 py-2 text-xs shadow-sm"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                        style={{ backgroundColor: group.color }}
+                      />
+                      <span className="truncate font-medium text-[hsl(var(--foreground))]">{group.label}</span>
+                      <span className="ml-auto tabular-nums text-[hsl(var(--muted-foreground))]">{group.paket}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </FullscreenChart>
@@ -186,8 +233,9 @@ export function SantunanYatimChart({ entries }: Props) {
                   <td className="py-2.5 pr-4 font-medium text-gray-800">{entry.namaDonatur}</td>
                   <td className="py-2.5 pr-4 text-gray-500">{rtLabel(entry.rt)}</td>
                   <td className="py-2.5 pr-4 text-right">
-                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
-                      {entry.jumlahPaket} pkt
+                    <span className="inline-flex min-w-[3.75rem] items-center justify-center whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold leading-none text-amber-700">
+                      <span className="tabular-nums">{entry.jumlahPaket}</span>
+                      <span className="ml-1">pkt</span>
                     </span>
                   </td>
                   <td className="py-2.5 text-right font-medium text-emerald-700">

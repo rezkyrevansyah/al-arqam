@@ -235,7 +235,10 @@ function ProgramSection({ program }: { program: TransparencyProgram }) {
 
       {program.programType === "zis" && program.zisEntries && program.zisEntries.length > 0 && (
         <div className="mt-8">
-          <ZisChart entries={program.zisEntries} />
+          <ZisChart
+            entries={program.zisEntries}
+            showMuzakkiList={program.showMuzakkiList}
+          />
         </div>
       )}
     </section>

@@ -169,6 +169,7 @@ CREATE TABLE public.transparency_programs (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   program_type text NOT NULL DEFAULT 'generic'::text CHECK (program_type = ANY (ARRAY['generic'::text, 'infaq_tarawih'::text, 'santunan_yatim'::text, 'zis'::text])),
   show_donors boolean NOT NULL DEFAULT true,
+  show_muzakki_list boolean NOT NULL DEFAULT true,
   CONSTRAINT transparency_programs_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.zis_entries (

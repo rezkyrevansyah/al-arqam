@@ -66,6 +66,7 @@ function toTransparencyProgram(
     relatedLinkUrl: row.related_link_url ?? "",
     isPublished: row.is_published ?? false,
     showDonors: row.show_donors ?? true,
+    showMuzakkiList: row.show_muzakki_list ?? true,
     sortOrder: row.sort_order ?? 0,
     programType: (row.program_type ?? 'generic') as ProgramType,
     metrics,
