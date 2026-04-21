@@ -399,6 +399,7 @@ export default function TransparencyPage() {
       relatedLinkLabel: selectedProgram.relatedLinkLabel,
       relatedLinkUrl: selectedProgram.relatedLinkUrl,
       isPublished: selectedProgram.isPublished,
+      showDonors: selectedProgram.showDonors ?? true,
       sortOrder: selectedProgram.sortOrder,
       programType: selectedProgram.programType,
     });
