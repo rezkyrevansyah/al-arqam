@@ -155,9 +155,9 @@ export function ZisChart({ entries, showMuzakkiList = true }: Props) {
       className: 'min-h-[132px]',
     },
     {
-      label: 'Estimasi Mustahik',
+      label: 'Zakat Fitrah (Jiwa)',
       value: `${totalZakatFitrahJiwa} jiwa`,
-      sub: 'Berdasarkan total jiwa zakat fitrah',
+      sub: 'Total zakat per jiwa yang terkumpul',
       className: 'min-h-[132px]',
     },
     {
