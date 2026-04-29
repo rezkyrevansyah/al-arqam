@@ -97,7 +97,7 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-1">
               {NAV_LINKS.map((link) => {
                 const isActive =
-                  (link.href === '/dashboard' && pathname === '/dashboard') ||
+                  (!link.sectionId && pathname === link.href) ||
                   (isHomePage && activeSection === link.sectionId);
 
                 return (
