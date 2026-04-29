@@ -10,9 +10,9 @@ import { QurbanCTA } from "@/components/qurban/QurbanCTA";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Qurban Idul Adha 1447H - Masjid Jami' Al-Arqom",
+  title: "Qurban Idul Adha 1447H",
   description:
-    "Informasi pendaftaran Qurban Idul Adha 1447H di Masjid Jami' Al-Arqom Bekasi Utara. Paket patungan sapi, kambing, dan domba.",
+    "Informasi pendaftaran Qurban Idul Adha 1447H di Masjid Jami' Al-Arqam Bekasi Utara. Paket patungan sapi, kambing, dan domba.",
 };
 
 export const revalidate = 300;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { BarChart3, ExternalLink, HeartHandshake, Layers3, TrendingUp } from "lucide-react";
 
 import { Footer } from "@/components/Footer";
@@ -11,6 +12,12 @@ import { ZisChart } from "@/components/charts/ZisChart";
 import { getFooterData } from "@/services/site-data.server";
 import { getTransparencyPageData } from "@/services/transparency-data.server";
 import type { TransparencyDonor, TransparencyMetric, TransparencyProgram } from "@/data/types";
+
+export const metadata: Metadata = {
+  title: "Dashboard Transparansi",
+  description:
+    "Dashboard transparansi keuangan Masjid Jami' Al-Arqam Bekasi Utara. Laporan zakat, infaq, sedekah, dan program sosial.",
+};
 
 export const revalidate = 300;
 

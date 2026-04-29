@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
 import { Countdown } from '@/components/Countdown';
@@ -14,6 +15,13 @@ import { RealtimeRefresher } from '@/components/RealtimeRefresher';
 import { Providers } from './providers';
 import { getHomeSiteData } from '@/services/site-data.server';
 import { getTodayPrayerTimes } from '@/services/prayer-times.server';
+
+export const metadata: Metadata = {
+  title: "Masjid Jami' Al-Arqam Bekasi Utara - Pusat Ibadah & Dakwah",
+  description:
+    "Website Resmi Masjid Jami' Al-Arqam Bekasi Utara. Jadwal sholat, agenda kegiatan islami, artikel dakwah, galeri, dan donasi masjid. Bersama memakmurkan masjid.",
+  alternates: { canonical: "https://www.alarqambekasiutara.com" },
+};
 
 export const revalidate = 60;
 

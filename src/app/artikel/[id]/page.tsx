@@ -24,12 +24,12 @@ export async function generateMetadata({
 
   if (!article) {
     return {
-      title: 'Artikel Tidak Ditemukan | Masjid Jami\' Al-Arqom',
+      title: 'Artikel Tidak Ditemukan',
     };
   }
 
   return {
-    title: `${article.title} | Masjid Jami' Al-Arqom`,
+    title: article.title,
     description: article.excerpt,
   };
 }
