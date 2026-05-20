@@ -9,6 +9,7 @@ import { Gallery } from '@/components/Gallery';
 import { Pengurus } from '@/components/Pengurus';
 import { Donation } from '@/components/Donation';
 import { Footer } from '@/components/Footer';
+import { InfaqSection } from '@/components/InfaqSection';
 import { QurbanBanner } from '@/components/QurbanBanner';
 import { HomeClient } from '@/components/HomeClient';
 import { RealtimeRefresher } from '@/components/RealtimeRefresher';
@@ -39,6 +40,7 @@ export default async function Home() {
         <Navbar />
         <main>
           <Hero />
+          <InfaqSection />
           <Countdown />
           <QurbanBanner />
           <PrayerTimesSection prayerTimes={prayerTimes} />

@@ -89,7 +89,7 @@ export function Navbar() {
                 />
               </div>
               <span className="hidden sm:block font-display text-lg font-semibold text-[hsl(var(--foreground))] tracking-tight">
-                Al-Arqom
+                Masjid Al Arqam
               </span>
             </button>
 

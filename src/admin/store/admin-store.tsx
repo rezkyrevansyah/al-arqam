@@ -21,7 +21,14 @@ import type {
 } from '../../data/types';
 import * as api from '../../services/api';
 import { invalidateCache } from '../../services/cache';
-import { revalidateSiteData } from '@/app/actions';
+
+async function revalidateSiteData() {
+  try {
+    await fetch('/api/revalidate', { method: 'POST' });
+  } catch {
+    // Non-critical: revalidation failure doesn't block the save
+  }
+}
 
 // Type alias for compatibility
 export type BoardMember = ManagementMember;

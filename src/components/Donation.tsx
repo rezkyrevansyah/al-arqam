@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Landmark, Copy, Check, QrCode, Download, X, Maximize2 } from 'lucide-react';
+import { Heart, Copy, Check, QrCode, Download, X, Maximize2 } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatImageUrl } from '../lib/utils';
 
@@ -217,8 +217,12 @@ export function Donation() {
 
                 <div className="relative z-10">
                   <div className="flex items-start gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--primary))]/5 flex items-center justify-center flex-shrink-0">
-                      <Landmark className="w-6 h-6 text-[hsl(var(--primary))]" />
+                    <div className="w-14 h-14 rounded-2xl bg-white border border-[hsl(var(--border))]/60 flex items-center justify-center flex-shrink-0 p-2 shadow-sm">
+                      <img
+                        src="/bank_muamalat_logo.png"
+                        alt="Bank Muamalat"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
