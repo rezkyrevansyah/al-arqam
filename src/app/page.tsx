@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
+import { GalleryPreview } from '@/components/GalleryPreview';
 import { Countdown } from '@/components/Countdown';
 import { PrayerTimesSection } from '@/components/PrayerTimesSection';
 import { Agenda } from '@/components/Agenda';
@@ -40,6 +41,7 @@ export default async function Home() {
         <Navbar />
         <main>
           <Hero />
+          <GalleryPreview />
           <InfaqSection />
           <Countdown />
           <TahunBaruBanner />

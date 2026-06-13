@@ -4,6 +4,11 @@ import { useEffect } from 'react';
 
 export function useScrollToHash() {
   useEffect(() => {
+    // Disable browser scroll restoration so the page always starts at top
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
     // Handle initial hash on mount
     const handleHashChange = () => {
       const hash = window.location.hash;
