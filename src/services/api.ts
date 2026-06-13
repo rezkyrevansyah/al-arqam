@@ -475,7 +475,8 @@ export async function saveCountdown(data: CountdownEvent): Promise<void> {
 // ── Admin Mutations - Agenda ──────────────────────────────────
 
 export async function addAgenda(item: Omit<AgendaItem, 'id'>): Promise<{ success: boolean; id: string }> {
-  const { data, error } = await supabase.from('agenda').insert(item).select('id').single();
+  const payload = { ...item, category: item.category.toLowerCase() };
+  const { data, error } = await supabase.from('agenda').insert(payload).select('id').single();
   throwOnError(error);
   await logActivity('create', 'agenda', data!.id, `Agenda ditambahkan: "${item.title}"`);
   return { success: true, id: data!.id };
@@ -483,7 +484,8 @@ export async function addAgenda(item: Omit<AgendaItem, 'id'>): Promise<{ success
 
 export async function updateAgenda(item: AgendaItem): Promise<void> {
   const { id, ...rest } = item;
-  const { error } = await supabase.from('agenda').update(rest).eq('id', id);
+  const payload = { ...rest, category: rest.category.toLowerCase() };
+  const { error } = await supabase.from('agenda').update(payload).eq('id', id);
   throwOnError(error);
   await logActivity('update', 'agenda', id, `Agenda diperbarui: "${item.title}"`);
 }
@@ -524,6 +526,13 @@ export async function addGalleryItem(item: { image: string; title: string; date:
   throwOnError(error);
   await logActivity('create', 'gallery', data!.id, `Foto ditambahkan: "${item.title}"`);
   return { success: true, id: data!.id, imageUrl: item.image };
+}
+
+export async function updateGalleryItem(item: GalleryItem): Promise<void> {
+  const { id, ...rest } = item;
+  const { error } = await supabase.from('gallery').update(rest).eq('id', id);
+  throwOnError(error);
+  await logActivity('update', 'gallery', id, `Foto diperbarui: "${item.title}"`);
 }
 
 export async function deleteGalleryItem(id: string): Promise<void> {

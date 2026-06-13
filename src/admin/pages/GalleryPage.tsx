@@ -32,13 +32,15 @@ export default function GalleryPage() {
 
       {/* Add form */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg mx-4 p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            {/* Header — always visible */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 shrink-0">
               <h2 className="text-lg font-bold text-gray-900">Tambah Foto</h2>
               <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5 text-gray-400" /></button>
             </div>
-            <div className="space-y-4">
+            {/* Body — scrollable */}
+            <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Judul Foto</label>
                 <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })}
@@ -48,7 +50,7 @@ export default function GalleryPage() {
                 value={form.image}
                 onChange={(url) => setForm({ ...form, image: url })}
                 label="Foto Galeri"
-                previewHeight="h-56"
+                previewHeight="h-48"
                 folder="gallery"
               />
               <div>
@@ -57,9 +59,10 @@ export default function GalleryPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" />
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+            {/* Footer — always visible */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
               <button onClick={() => setShowForm(false)} className="px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100 rounded-xl">Batal</button>
-              <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50">
+              <button onClick={handleSave} disabled={isSaving || !form.title || !form.image} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 <Save className="w-4 h-4" /> Simpan
               </button>
             </div>

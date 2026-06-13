@@ -72,6 +72,7 @@ interface AdminState {
 
   galleryList: GalleryItem[];
   addGalleryItem: (item: Omit<GalleryItem, 'id'>) => Promise<void>;
+  updateGalleryItem: (id: string, item: Partial<GalleryItem>) => Promise<void>;
   deleteGalleryItem: (id: string) => Promise<void>;
 
   donation: DonationConfig;
@@ -326,6 +327,25 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       showToast('Gagal menambahkan foto: ' + (err as Error).message, 'error');
     } finally { setIsSaving(false); }
   }, [showToast]);
+
+  const updateGalleryItem = useCallback(async (id: string, item: Partial<GalleryItem>) => {
+    try {
+      setIsSaving(true);
+      const existing = galleryList.find(g => g.id === id);
+      if (!existing) {
+        showToast('Foto tidak ditemukan', 'error');
+        return;
+      }
+      const updated = { ...existing, ...item };
+      await api.updateGalleryItem(updated);
+      setGalleryList(prev => prev.map(g => g.id === id ? updated : g));
+      invalidateCache();
+      await revalidateSiteData();
+      showToast('Foto berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal memperbarui foto: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast, galleryList]);
 
   const deleteGalleryItem = useCallback(async (id: string) => {
     try {
@@ -819,7 +839,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       countdown, setCountdown,
       agendaList, addAgenda, updateAgenda, deleteAgenda,
       articleList, addArticle, updateArticle, deleteArticle,
-      galleryList, addGalleryItem, deleteGalleryItem,
+      galleryList, addGalleryItem, updateGalleryItem, deleteGalleryItem,
       donation, setDonation,
       transparencyPrograms,
       addTransparencyProgram,
