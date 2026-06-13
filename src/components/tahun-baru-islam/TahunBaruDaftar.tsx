@@ -5,9 +5,9 @@ import { MessageCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 const CONTACTS = [
-  { nama: 'Mas Dafi', phone: '6210811555' },
-  { nama: 'Mas Nabil', phone: '6295323777557' },
-  { nama: 'Bu Venty', phone: '6217993383' },
+  { nama: 'Mas Dafi', phone: '628118815555' },
+  { nama: 'Mas Nabil', phone: '6289532357557' },
+  { nama: 'Bu Venty', phone: '620811195183' },
 ];
 
 const WA_MESSAGE = 'Assalamualaikum, saya ingin mendaftarkan anak untuk lomba Gema Muharram (Peringatan Tahun Baru Islam 1448H) di Masjid Al-Arqam RW 024';

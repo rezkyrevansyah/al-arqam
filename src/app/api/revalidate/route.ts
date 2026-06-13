@@ -9,11 +9,11 @@ export async function POST() {
   revalidatePath('/dashboard');
 
   // Revalidate the unstable_cache tags used in site-data.server.ts
-  revalidateTag('home-site-data');
-  revalidateTag('agenda-site-data');
-  revalidateTag('gallery-site-data');
-  revalidateTag('articles-site-data');
-  revalidateTag('footer-site-data');
+  revalidateTag('home-site-data', 'max');
+  revalidateTag('agenda-site-data', 'max');
+  revalidateTag('gallery-site-data', 'max');
+  revalidateTag('articles-site-data', 'max');
+  revalidateTag('footer-site-data', 'max');
 
   return NextResponse.json({ revalidated: true });
 }
