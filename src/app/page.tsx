@@ -10,7 +10,7 @@ import { Pengurus } from '@/components/Pengurus';
 import { Donation } from '@/components/Donation';
 import { Footer } from '@/components/Footer';
 import { InfaqSection } from '@/components/InfaqSection';
-import { QurbanBanner } from '@/components/QurbanBanner';
+import { TahunBaruBanner } from '@/components/TahunBaruBanner';
 import { HomeClient } from '@/components/HomeClient';
 import { RealtimeRefresher } from '@/components/RealtimeRefresher';
 import { Providers } from './providers';
@@ -42,7 +42,7 @@ export default async function Home() {
           <Hero />
           <InfaqSection />
           <Countdown />
-          <QurbanBanner />
+          <TahunBaruBanner />
           <PrayerTimesSection prayerTimes={prayerTimes} />
           <Agenda />
           <Articles />

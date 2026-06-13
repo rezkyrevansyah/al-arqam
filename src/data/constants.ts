@@ -5,5 +5,6 @@ export const NAV_LINKS = [
   { label: "Galeri", href: "/#galeri", sectionId: "galeri" },
   { label: "Tentang", href: "/#tentang", sectionId: "tentang" },
   { label: "Qurban", href: "/qurban" },
+  { label: "Tahun Baru Islam", href: "/tahun-baru-islam" },
   { label: "Dashboard", href: "/dashboard" },
 ];
