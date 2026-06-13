@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 const CONTACTS = [
   { nama: 'Mas Dafi', phone: '628118815555' },
-  { nama: 'Mas Nabil', phone: '6289532357557' },
+  { nama: 'Mas Nabil', phone: '62895323577557' },
   { nama: 'Bu Venty', phone: '620811195183' },
 ];
 
