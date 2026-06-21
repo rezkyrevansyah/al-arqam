@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, Clock, MapPin, Maximize2, X } from 'lucide-react';
+import { Maximize2, X } from 'lucide-react';
 import Image from 'next/image';
 
 const ORGANIZERS = [
@@ -69,6 +69,18 @@ export function TahunBaruHero() {
           </span>
         </motion.div>
 
+        {/* Alhamdulillah badge */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="mt-4"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--primary))]/10 border border-[hsl(var(--primary))]/20 text-sm font-semibold text-[hsl(var(--primary))]">
+            ✨ Alhamdulillah, acara telah terlaksana dengan lancar!
+          </span>
+        </motion.div>
+
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
@@ -98,37 +110,16 @@ export function TahunBaruHero() {
           Satukan Langkah, Ekspresikan Bakat, Pererat Ukhuwah
         </motion.p>
 
-        {/* Info cards */}
+        {/* Pesan penutup */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 1 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-10 max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border border-[hsl(var(--border))]/60 rounded-2xl px-6 py-5 shadow-sm text-left"
         >
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-[hsl(var(--border))]/60 rounded-2xl px-5 py-3 shadow-sm">
-            <CalendarDays className="w-5 h-5 text-[hsl(var(--primary))] flex-shrink-0" />
-            <div className="text-left">
-              <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Tanggal</p>
-              <p className="text-sm font-bold text-[hsl(var(--foreground))]">Sabtu, 20 Juni 2026</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-[hsl(var(--border))]/60 rounded-2xl px-5 py-3 shadow-sm">
-            <Clock className="w-5 h-5 text-[hsl(var(--primary))] flex-shrink-0" />
-            <div className="text-left">
-              <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Waktu</p>
-              <p className="text-sm font-bold text-[hsl(var(--foreground))]">Lomba: 07.00 – 11.30</p>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">Pawai Obor: Ba&apos;da Isya</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-[hsl(var(--border))]/60 rounded-2xl px-5 py-3 shadow-sm">
-            <MapPin className="w-5 h-5 text-[hsl(var(--primary))] flex-shrink-0" />
-            <div className="text-left">
-              <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Tempat</p>
-              <p className="text-sm font-bold text-[hsl(var(--foreground))]">TPA & Masjid Al-Arqam RW 024</p>
-            </div>
-          </div>
+          <p className="text-sm md:text-base text-[hsl(var(--muted-foreground))] leading-relaxed">
+            Rangkaian kegiatan <span className="font-semibold text-[hsl(var(--foreground))]">GEMA MUHARRAM 1448H</span> telah selesai dilaksanakan dengan lancar. Lomba-lomba dan Pawai Obor telah berlangsung penuh semangat. Kami mengucapkan terima kasih kepada seluruh peserta, orang tua, panitia, pengurus DKM, para donatur, serta seluruh pihak yang telah mendukung kegiatan ini. 🤲
+          </p>
         </motion.div>
 
         {/* Poster */}
