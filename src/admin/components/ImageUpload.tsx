@@ -1,6 +1,7 @@
 import { useState, useRef, type ChangeEvent } from 'react';
 import { Upload, Link as LinkIcon, X, Image as ImageIcon, AlertCircle, Loader2 } from 'lucide-react';
 import { uploadImage, getStorageUrl, type ImageFolder } from '../../lib/supabase';
+import { compressImageFile } from '../../lib/image-compression';
 
 interface ImageUploadProps {
   value: string;
@@ -19,6 +20,7 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
   const [error, setError] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (file: File) => {
@@ -35,12 +37,17 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
     }
 
     try {
+      setIsCompressing(true);
+      const compressed = await compressImageFile(file, folder);
+      setIsCompressing(false);
+
       setIsUploading(true);
-      const path = await uploadImage(file, folder);
+      const path = await uploadImage(compressed, folder);
       onChange(path);
     } catch (err) {
       setError('Upload gagal: ' + (err as Error).message);
     } finally {
+      setIsCompressing(false);
       setIsUploading(false);
     }
   };
@@ -165,10 +172,17 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
               accept={ALLOWED_EXTENSIONS.join(',')}
               onChange={handleFileChange}
               className="hidden"
-              disabled={isUploading}
+              disabled={isUploading || isCompressing}
             />
 
-            {isUploading ? (
+            {isCompressing ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+                </div>
+                <p className="text-sm font-medium text-gray-700">Mengompresi gambar...</p>
+              </div>
+            ) : isUploading ? (
               <div className="flex flex-col items-center gap-2">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
                   <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
@@ -228,6 +242,7 @@ export default function ImageUpload({ value, onChange, label = "Gambar", preview
                   <li>Format: JPG, PNG, WebP, atau GIF</li>
                   <li>Ukuran maksimal: 5MB</li>
                   <li>Resolusi disarankan: minimal 800x600px</li>
+                  <li>Foto otomatis dikompres agar loading lebih cepat, tanpa mengurangi kualitas tampilan</li>
                 </ul>
               </div>
             </div>

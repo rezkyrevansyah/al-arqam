@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import { useAdmin } from '../store/admin-store';
-import { Plus, Trash2, X, Save, Image, Calendar } from 'lucide-react';
+import { Plus, Trash2, X, Save, Image as ImageIcon, Calendar } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
 import { getStorageUrl } from '../../lib/supabase';
 
@@ -89,14 +90,16 @@ export default function GalleryPage() {
       {/* Gallery grid */}
       {galleryList.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-2xl text-center py-16">
-          <Image className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <ImageIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-sm text-gray-500">Belum ada foto dalam galeri.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {galleryList.map(g => (
             <div key={g.id} className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all">
-              <img src={getStorageUrl(g.image)} alt={g.title} className="h-44 w-full object-cover" />
+              <div className="relative h-44 w-full">
+                <Image src={getStorageUrl(g.image)} alt={g.title} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
+              </div>
               <div className="p-3">
                 <h3 className="text-xs font-semibold text-gray-800 truncate">{g.title}</h3>
                 <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import { useAdmin, type BoardMember } from '../store/admin-store';
 import { Plus, Pencil, Trash2, X, Save, Users } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
@@ -102,9 +103,9 @@ export default function BoardPage() {
           {boardList.map((m, i) => (
             <div key={m.id} className="flex items-center gap-4 p-4 hover:bg-gray-50/50 transition-colors group">
               <span className="text-xs text-gray-300 w-6 text-center font-mono">{i + 1}</span>
-              <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                 {m.image ? (
-                  <img src={getStorageUrl(m.image)} alt="" className="w-full h-full object-cover" />
+                  <Image src={getStorageUrl(m.image)} alt="" fill sizes="44px" className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Users className="w-5 h-5 text-gray-300" />

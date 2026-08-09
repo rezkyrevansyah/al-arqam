@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ZoomIn, Home, Calendar, Filter } from 'lucide-react';
 import { useSiteData } from '@/contexts/SiteDataContext';
 import { formatImageUrl } from '@/lib/utils';
-// import Image from 'next/image'; // Using standard img for external URLs (Google Drive) for now to avoid domain config issues
 
 export default function GalleryPage() {
   const { data, loading } = useSiteData();
@@ -125,10 +125,12 @@ export default function GalleryPage() {
               className="group relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-[hsl(var(--muted))]"
               onClick={() => setLightboxIndex(index)}
             >
-              <img
+              <Image
                 src={formatImageUrl(item.image)}
                 alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent 
                 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-500">
@@ -228,10 +230,13 @@ export default function GalleryPage() {
               className="max-w-5xl max-h-[85vh] mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <img
+              <Image
                 src={formatImageUrl(filteredData[lightboxIndex].image)}
                 alt={filteredData[lightboxIndex].title}
-                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                width={1600}
+                height={1200}
+                sizes="100vw"
+                className="w-auto h-auto max-w-full max-h-[80vh] object-contain rounded-lg"
               />
               <div className="text-center mt-4">
                 <h3 className="text-white font-semibold">

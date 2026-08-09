@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Image from 'next/image';
 import { useAdmin } from '../store/admin-store';
 import { Plus, Pencil, Trash2, Newspaper, Clock, User } from 'lucide-react';
 import { formatImageUrl } from '../../lib/utils';
@@ -48,7 +49,11 @@ export default function ArticlePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {articleList.map(a => (
             <div key={a.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden group hover:shadow-md transition-all">
-              {a.image && <img src={formatImageUrl(a.image)} alt="" className="h-40 w-full object-cover" />}
+              {a.image && (
+                <div className="relative h-40 w-full">
+                  <Image src={formatImageUrl(a.image)} alt="" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+                </div>
+              )}
               <div className="p-5">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0">

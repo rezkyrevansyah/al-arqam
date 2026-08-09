@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, User, Calendar, ChevronUp, Share2 } from 'lucide-react';
 
@@ -83,10 +84,13 @@ export default function ArticleDetailPageClient({ id }: { id: string }) {
         transition={{ duration: 0.6 }}
         className="relative h-[40vh] md:h-[50vh] overflow-hidden"
       >
-        <img
+        <Image
           src={formatImageUrl(article.image)}
           alt={article.title}
-          className="w-full h-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--background))] via-black/30 to-transparent" />
       </motion.div>
@@ -152,10 +156,12 @@ export default function ArticleDetailPageClient({ id }: { id: string }) {
                     className="group flex gap-4 bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl p-4 hover:border-[hsl(var(--primary))]/20 hover:shadow-lg transition-all duration-300"
                   >
                     <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden">
-                      <img
+                      <Image
                         src={formatImageUrl(relatedArticle.image)}
                         alt={relatedArticle.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        fill
+                        sizes="80px"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                     </div>
                     <div className="flex flex-col justify-center min-w-0">
