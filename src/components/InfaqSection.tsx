@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Heart, Maximize2, Download, X, QrCode } from 'lucide-react';
 
@@ -82,9 +83,11 @@ export function InfaqSection() {
                       Bank Muamalat Indonesia
                     </p>
                   </div>
-                  <img
+                  <Image
                     src="/bank_muamalat_logo.png"
                     alt="Bank Muamalat Indonesia"
+                    width={400}
+                    height={113}
                     className="h-8 w-auto object-contain flex-shrink-0 ml-4"
                   />
                 </div>
@@ -175,9 +178,12 @@ export function InfaqSection() {
                   onClick={() => setIsFullscreen(true)}
                   className="group relative w-full rounded-2xl overflow-hidden border border-[hsl(var(--border))]/50 shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
-                  <img
+                  <Image
                     src={QRIS_IMAGE}
                     alt="QRIS Masjid Al Arqam"
+                    width={785}
+                    height={1280}
+                    sizes="(max-width: 1024px) 100vw, 224px"
                     className="w-full h-auto object-contain block"
                   />
                   {/* Hover overlay */}
@@ -253,9 +259,12 @@ export function InfaqSection() {
               {/* ── Mobile: image + download stacked, scrollable ── */}
               {/* ── Desktop: image panel left ── */}
               <div className="flex-1 sm:flex-none sm:w-56 overflow-y-auto bg-[hsl(var(--muted))]/20 flex flex-col items-center p-4 gap-4">
-                <img
+                <Image
                   src={QRIS_IMAGE}
                   alt="QRIS Masjid Al Arqam"
+                  width={785}
+                  height={1280}
+                  sizes="(max-width: 640px) 100vw, 224px"
                   className="w-full h-auto object-contain rounded-xl"
                 />
                 {/* Download button visible on mobile inside scroll area */}

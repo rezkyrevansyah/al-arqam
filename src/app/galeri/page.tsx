@@ -62,7 +62,7 @@ export default function GalleryPage() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-center">
             <Link 
-              href="/#galeri" 
+              href="/" 
               className="flex items-center gap-2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
             >
               <Home className="w-4 h-4" />

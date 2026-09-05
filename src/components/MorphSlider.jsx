@@ -275,21 +275,49 @@ class MorphEngine {
 
   loadTextures() {
     this.items.forEach((item, index) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = item.image;
-      img.onload = () => {
-        const texture = new Texture(this.gl, { generateMipmaps: false });
-        texture.image = img;
-        this.textures[index] = texture;
-        this.sizes[index] = [img.naturalWidth || 1, img.naturalHeight || 1];
-        if (index === this.current) {
-          this.program.uniforms.tCurrent.value = texture;
-          this.program.uniforms.uCurrentSize.value = this.sizes[index];
-        }
-      };
-      img.onerror = () => {};
+      this.loadOneTexture(item, index);
     });
+  }
+
+  applyTexture(index, source, width, height) {
+    const texture = new Texture(this.gl, { generateMipmaps: false });
+    texture.image = source;
+    this.textures[index] = texture;
+    this.sizes[index] = [width || 1, height || 1];
+    if (index === this.current) {
+      this.program.uniforms.tCurrent.value = texture;
+      this.program.uniforms.uCurrentSize.value = this.sizes[index];
+    }
+  }
+
+  loadOneTexture(item, index) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = item.image;
+    img.onload = () => {
+      // Cap the decoded/uploaded resolution regardless of the source image's
+      // native size — the slider never renders wider than ~1400px even at
+      // dprCap 2, so uploading a full 1920px+ original wastes GPU memory and
+      // per-frame shader cost for no visible quality gain. Downsampling
+      // through a 2D canvas (rather than createImageBitmap's resize option)
+      // keeps the same top-left-origin pixel layout as a plain <img>, so it
+      // doesn't need any special WebGL flipY handling.
+      const MAX_DIM = 1400;
+      const scale = Math.min(1, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+      if (scale < 1 && typeof document !== 'undefined') {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.naturalWidth * scale);
+        canvas.height = Math.round(img.naturalHeight * scale);
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          this.applyTexture(index, canvas, canvas.width, canvas.height);
+          return;
+        }
+      }
+      this.applyTexture(index, img, img.naturalWidth, img.naturalHeight);
+    };
+    img.onerror = () => {};
   }
 
   resize() {
@@ -315,6 +343,19 @@ class MorphEngine {
     if (!this.dragging && !this.animating) this.syncOptions();
     this.renderer.render({ scene: this.mesh });
     this.raf = requestAnimationFrame(this.boundLoop);
+  }
+
+  pause() {
+    if (this.raf != null) {
+      cancelAnimationFrame(this.raf);
+      this.raf = null;
+    }
+  }
+
+  resume() {
+    if (this.raf == null) {
+      this.raf = requestAnimationFrame(this.boundLoop);
+    }
   }
 
   wrap(i) {
@@ -480,6 +521,7 @@ export default function MorphSlider({
   showCaptions = true,
   showControls = true,
   showIndicators = true,
+  inView = true,
   className = '',
   ...props
 }) {
@@ -516,11 +558,20 @@ export default function MorphSlider({
   const handleNext = useCallback(() => engineRef.current?.next(), []);
   const handlePrev = useCallback(() => engineRef.current?.prev(), []);
 
+  // Pause/resume the WebGL render loop as the slider scrolls in/out of view —
+  // it otherwise renders every frame indefinitely regardless of visibility.
   useEffect(() => {
-    if (!autoplay || hovering) return undefined;
+    const engine = engineRef.current;
+    if (!engine) return;
+    if (inView) engine.resume();
+    else engine.pause();
+  }, [inView]);
+
+  useEffect(() => {
+    if (!autoplay || hovering || !inView) return undefined;
     const id = setTimeout(() => engineRef.current?.next(), Math.max(autoplayDelay, 1) * 1000);
     return () => clearTimeout(id);
-  }, [autoplay, autoplayDelay, hovering, index]);
+  }, [autoplay, autoplayDelay, hovering, inView, index]);
 
   useEffect(() => {
     const el = containerRef.current;

@@ -6,6 +6,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Batches a high-frequency callback (e.g. scroll/resize handlers) to run at
+ * most once per animation frame, dropping intermediate calls.
+ */
+export function rafThrottle<T extends (...args: never[]) => void>(fn: T): T {
+  let scheduled = false;
+  return ((...args: Parameters<T>) => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      fn(...args);
+    });
+  }) as T;
+}
+
 export function formatGoogleDriveUrl(url: string | undefined | null): string {
   if (!url) return '';
 

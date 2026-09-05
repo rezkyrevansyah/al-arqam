@@ -69,10 +69,15 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 export function Countdown() {
   const { data } = useSiteData();
 
+  const countdownDate = data?.countdown?.date?.trim() || '';
+  // Called unconditionally, before any early return, so hook order never
+  // changes across renders — a fallback empty string is safe here since the
+  // early returns below still prevent NaN-derived values from ever rendering.
+  const timeLeft = useCountdown(countdownDate);
+
   if (!data || !data.countdown) return null;
 
   const countdownActive = Boolean(data.countdown.active);
-  const countdownDate = data.countdown.date?.trim() || '';
   const countdownName = data.countdown.name?.trim() || '';
   const countdownDescription = data.countdown.description || '';
 
@@ -80,8 +85,6 @@ export function Countdown() {
 
   const targetTime = new Date(countdownDate).getTime();
   if (isNaN(targetTime) || targetTime <= Date.now()) return null;
-
-  const timeLeft = useCountdown(countdownDate);
 
   return (
     <section className="relative py-16 md:py-20 overflow-hidden">

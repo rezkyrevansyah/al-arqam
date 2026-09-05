@@ -1,26 +1,40 @@
 "use client";
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatImageUrl } from '../lib/utils';
-import MorphSlider from './MorphSlider';
+import { useLazyInView } from '../hooks/useLazyInView';
+
+const MorphSlider = dynamic(() => import('./MorphSlider'), {
+  ssr: false,
+  loading: () => <div className="h-full w-full rounded-[20px] bg-[hsl(var(--muted))] animate-pulse" />,
+});
 
 export function Gallery() {
   const { data } = useSiteData();
-
-  if (!data) return null;
+  const { ref, hasBeenInView, isInView } = useLazyInView();
 
   const galleryData = data?.gallery || [];
   const landingGallery = galleryData.slice(0, 8);
 
-  const sliderItems = landingGallery.map((item) => ({
-    image: formatImageUrl(item.image),
-    caption: item.title,
-  }));
+  // Keyed on content, not array reference, so an unrelated parent re-render
+  // (e.g. periodic data refresh) doesn't hand MorphSlider a "new" items array
+  // and force it to tear down/rebuild its whole WebGL engine for no reason.
+  const galleryKey = landingGallery.map((item) => `${item.id}:${item.image}:${item.title}`).join('|');
+  const sliderItems = useMemo(
+    () => landingGallery.map((item) => ({
+      image: formatImageUrl(item.image),
+      caption: item.title,
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [galleryKey]
+  );
 
-  if (sliderItems.length === 0) return null;
+  if (!data || sliderItems.length === 0) return null;
 
   return (
     <section id="galeri" className="relative py-24 md:py-32">
@@ -46,23 +60,27 @@ export function Gallery() {
 
         {/* Gallery Content */}
         <motion.div
+          ref={ref}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="relative w-full h-[420px] sm:h-[500px] md:h-[560px]"
         >
-          <MorphSlider
-            items={sliderItems}
-            transition="melt"
-            intensity={0.55}
-            aberration={0.35}
-            drift={0.4}
-            radius={20}
-            overlayColor="#0e1b16"
-            autoplay
-            loop
-          />
+          {hasBeenInView && (
+            <MorphSlider
+              items={sliderItems}
+              transition="melt"
+              intensity={0.55}
+              aberration={0.35}
+              drift={0.4}
+              radius={20}
+              overlayColor="#0e1b16"
+              autoplay
+              loop
+              inView={isInView}
+            />
+          )}
         </motion.div>
 
         {/* View All Button */}
@@ -77,7 +95,7 @@ export function Gallery() {
             href="/galeri"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-full font-medium hover:opacity-90 transition-all hover:gap-3 group"
           >
-            Lihat Semua Galeri
+            Lihat Semua Foto
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>

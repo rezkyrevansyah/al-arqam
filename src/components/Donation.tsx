@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Copy, Check, QrCode, Download, X, Maximize2, ShieldCheck } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
@@ -50,7 +51,7 @@ export function Donation() {
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = qrisImageUrl;
+      link.href = url;
       link.download = 'QRIS-Masjid-Al-Arqom.png';
       document.body.appendChild(link);
       link.click();
@@ -145,9 +146,11 @@ export function Donation() {
                   <div>
                     <div className="flex items-start gap-4 mb-6">
                       <div className="w-14 h-14 rounded-2xl bg-white border border-[hsl(var(--border))]/60 flex items-center justify-center flex-shrink-0 p-2 shadow-sm">
-                        <img
+                        <Image
                           src="/bank_muamalat_logo.png"
                           alt="Bank Muamalat"
+                          width={400}
+                          height={113}
                           className="w-full h-full object-contain"
                         />
                       </div>
@@ -271,11 +274,15 @@ export function Donation() {
                         onClick={() => setIsFullscreen(true)}
                         className="group relative bg-white p-4 rounded-2xl shadow-lg border border-[hsl(var(--border))]/40 hover:shadow-xl transition-all duration-300 cursor-pointer"
                       >
-                        <img
-                          src={qrisImageUrl}
-                          alt="QRIS Masjid Al-Arqom"
-                          className="w-40 h-40 object-contain rounded-lg"
-                        />
+                        <div className="relative w-40 h-40">
+                          <Image
+                            src={qrisImageUrl}
+                            alt="QRIS Masjid Al-Arqom"
+                            fill
+                            sizes="160px"
+                            className="object-contain rounded-lg"
+                          />
+                        </div>
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-2xl transition-all duration-300 flex items-center justify-center">
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
@@ -352,11 +359,15 @@ export function Donation() {
 
               {/* QRIS Image */}
               <div className="bg-[hsl(var(--muted))]/30 p-4 rounded-2xl mb-6">
-                <img
-                  src={qrisImageUrl}
-                  alt="QRIS Masjid Al-Arqom"
-                  className="w-full max-w-xs mx-auto object-contain rounded-xl"
-                />
+                <div className="relative w-full max-w-xs mx-auto aspect-square">
+                  <Image
+                    src={qrisImageUrl}
+                    alt="QRIS Masjid Al-Arqom"
+                    fill
+                    sizes="(max-width: 640px) 100vw, 320px"
+                    className="object-contain rounded-xl"
+                  />
+                </div>
               </div>
 
               {/* Download Button */}

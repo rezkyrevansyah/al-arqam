@@ -52,7 +52,7 @@ export const NAV_LINKS: NavLinkItem[] = [
     children: KEGIATAN_ITEMS,
   },
   { label: "Artikel", href: "/#artikel", sectionId: "artikel" },
-  { label: "Galeri", href: "/#galeri", sectionId: "galeri" },
+  { label: "Galeri", href: "/galeri" },
   { label: "Tentang", href: "/#tentang", sectionId: "tentang" },
   { label: "Dashboard", href: "/dashboard" },
 ];

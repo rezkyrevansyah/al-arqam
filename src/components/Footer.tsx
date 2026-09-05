@@ -33,7 +33,7 @@ const NAV_MENU = [
   { label: 'Kegiatan', href: '/kegiatan' },
   { label: 'Agenda', href: '/#agenda' },
   { label: 'Artikel', href: '/#artikel' },
-  { label: 'Galeri', href: '/#galeri' },
+  { label: 'Galeri', href: '/galeri' },
   { label: 'Tentang', href: '/#tentang' },
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Donasi', href: '/#donasi' },

@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback, CSSProperties } from 'react';
 import { gsap } from 'gsap';
+import Image from 'next/image';
 
 import './AccordionGallery.css';
 
@@ -63,6 +64,7 @@ const AccordionGallery = ({
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const firstRunRef = useRef(true);
   const mediaSizeRef = useRef(320);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const vertical = orientation === 'vertical';
   const count = items.length;
@@ -173,12 +175,18 @@ const AccordionGallery = ({
   useEffect(
     () => () => {
       tlRef.current?.kill();
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     },
     []
   );
 
   const handleEnter = (i: number) => {
-    if (trigger === 'hover') setActive(i);
+    if (trigger !== 'hover') return;
+    // Collapses a fast mouse sweep across several panels into a single
+    // settle-on-final-panel commit, instead of restarting the reflow-heavy
+    // expand/collapse timeline once per panel the cursor crosses.
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => setActive(i), 45);
   };
 
   const handleClick = (i: number, e: React.MouseEvent) => {
@@ -245,7 +253,25 @@ const AccordionGallery = ({
                   mediaRefs.current[i] = el;
                 }}
               >
-                <img src={item.image} alt={item.alt || item.label || ''} draggable="false" />
+                <Image
+                  src={item.image}
+                  alt={item.alt || item.label || ''}
+                  fill
+                  draggable={false}
+                  sizes="(max-width: 640px) 100vw, 500px"
+                  className="object-cover"
+                />
+                {grayscale && (
+                  <Image
+                    src={item.image}
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    draggable={false}
+                    sizes="(max-width: 640px) 100vw, 500px"
+                    className="object-cover ag-panel__img--gray"
+                  />
+                )}
               </span>
               <span className="ag-panel__overlay" aria-hidden="true" />
             </span>

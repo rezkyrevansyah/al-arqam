@@ -1,23 +1,39 @@
 "use client";
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowRight, Images } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatImageUrl } from '../lib/utils';
-import AccordionGallery from './AccordionGallery';
+import { useLazyInView } from '../hooks/useLazyInView';
+
+const AccordionGallery = dynamic(() => import('./AccordionGallery'), {
+  ssr: false,
+  loading: () => <div className="h-[440px] w-full rounded-[20px] bg-[hsl(var(--muted))] animate-pulse" />,
+});
 
 export function GalleryPreview() {
   const { data } = useSiteData();
+  const { ref, hasBeenInView } = useLazyInView();
   const gallery = data.gallery?.slice(0, 8) ?? [];
 
-  if (gallery.length === 0) return null;
+  // Keyed on content, not array reference — an unrelated parent re-render
+  // (e.g. periodic data refresh) shouldn't hand AccordionGallery a "new"
+  // items array with the same underlying photos.
+  const galleryKey = gallery.map(item => `${item.id}:${item.image}:${item.title}`).join('|');
+  const items = useMemo(
+    () => gallery.map(item => ({
+      image: formatImageUrl(item.image),
+      label: item.title,
+      alt: item.title
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [galleryKey]
+  );
 
-  const items = gallery.map(item => ({
-    image: formatImageUrl(item.image),
-    label: item.title,
-    alt: item.title
-  }));
+  if (gallery.length === 0) return null;
 
   return (
     <section className="py-20 bg-[hsl(var(--background))] overflow-hidden">
@@ -46,23 +62,26 @@ export function GalleryPreview() {
 
         {/* Accordion gallery */}
         <motion.div
+          ref={ref}
           initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.15 }}
         >
-          <AccordionGallery
-            items={items}
-            defaultIndex={Math.floor(items.length / 2)}
-            accentColor="hsl(38, 70%, 55%)"
-            overlayColor="hsl(160, 30%, 8%)"
-            textColor="#ffffff"
-            height={440}
-            gap={10}
-            radius={20}
-            expandRatio={0.5}
-            trigger="hover"
-          />
+          {hasBeenInView && (
+            <AccordionGallery
+              items={items}
+              defaultIndex={Math.floor(items.length / 2)}
+              accentColor="hsl(38, 70%, 55%)"
+              overlayColor="hsl(160, 30%, 8%)"
+              textColor="#ffffff"
+              height={440}
+              gap={10}
+              radius={20}
+              expandRatio={0.5}
+              trigger="hover"
+            />
+          )}
         </motion.div>
 
         {/* CTA */}

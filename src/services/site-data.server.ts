@@ -126,11 +126,13 @@ async function fetchHomeSiteDataUncached(): Promise<AllSiteData> {
       supabase
         .from("articles")
         .select("id, title, excerpt, content, author, date, image, category")
-        .order("date", { ascending: false }),
+        .order("date", { ascending: false })
+        .limit(8),
       supabase
         .from("gallery")
         .select("id, image, title, date")
-        .order("date", { ascending: false }),
+        .order("date", { ascending: false })
+        .limit(8),
       supabase
         .from("board_members")
         .select("id, name, title, image, sort_order")

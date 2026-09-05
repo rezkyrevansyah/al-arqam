@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { NAV_LINKS, type KegiatanSubItem } from '../data/constants';
 import { useSiteData } from '../contexts/SiteDataContext';
+import { rafThrottle } from '../lib/utils';
 
 const ICON_MAP = {
   Sparkles,
@@ -67,11 +68,11 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = rafThrottle(() => {
       setIsScrolled(window.scrollY > 50);
 
       if (isHomePage) {
-        const sections = ['agenda', 'artikel', 'galeri', 'tentang', 'donasi'];
+        const sections = ['agenda', 'artikel', 'tentang', 'donasi'];
         for (const section of sections) {
           const element = document.getElementById(section);
           if (element) {
@@ -83,7 +84,7 @@ export function Navbar() {
           }
         }
       }
-    };
+    });
 
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
