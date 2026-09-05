@@ -11,6 +11,8 @@ import ArticleEditorPage from './pages/ArticleEditorPage';
 import GalleryPage from './pages/GalleryPage';
 import DonationPage from './pages/DonationPage';
 import TransparencyPage from './pages/TransparencyPage';
+import QurbanPage from './pages/QurbanPage';
+import EventResultsPage from './pages/EventResultsPage';
 import BoardPage from './pages/BoardPage';
 import FooterPage from './pages/FooterPage';
 import { supabase } from '../lib/supabase';
@@ -64,6 +66,8 @@ function ProtectedRoutes() {
               <Route path="/galeri" element={<GalleryPage />} />
               <Route path="/donasi" element={<DonationPage />} />
               <Route path="/transparansi" element={<TransparencyPage />} />
+              <Route path="/qurban" element={<QurbanPage />} />
+              <Route path="/event-results" element={<EventResultsPage />} />
               <Route path="/pengurus" element={<BoardPage />} />
               <Route path="/footer" element={<FooterPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

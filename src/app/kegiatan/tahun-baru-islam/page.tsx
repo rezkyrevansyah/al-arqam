@@ -2,10 +2,13 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/app/providers";
 import { getFooterData } from "@/services/site-data.server";
+import { getEventProgramBySlug } from "@/services/events.server";
 import { TahunBaruHero } from "@/components/tahun-baru-islam/TahunBaruHero";
 import { TahunBaruHasil } from "@/components/tahun-baru-islam/TahunBaruHasil";
 
 import type { Metadata } from "next";
+
+const GEMA_MUHARRAM_SLUG = "gema-muharram-1448h";
 
 export const metadata: Metadata = {
   title: "Pengumuman Pemenang - Gema Muharram 1448H",
@@ -16,7 +19,10 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function KegiatanTahunBaruIslamPage() {
-  const footer = await getFooterData();
+  const [footer, program] = await Promise.all([
+    getFooterData(),
+    getEventProgramBySlug(GEMA_MUHARRAM_SLUG),
+  ]);
 
   return (
     <Providers initialData={{ footer }}>
@@ -24,7 +30,14 @@ export default async function KegiatanTahunBaruIslamPage() {
         <Navbar />
         <main className="pb-20 pt-20">
           <TahunBaruHero />
-          <TahunBaruHasil />
+          {program && (
+            <TahunBaruHasil
+              title={program.title}
+              description={program.description}
+              documentationUrl={program.documentationUrl}
+              categories={program.categories}
+            />
+          )}
         </main>
         <Footer />
       </div>

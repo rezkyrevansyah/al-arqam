@@ -2,9 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
-import { QURBAN_PRICING, formatRupiah } from '@/data/qurban';
+import { formatRupiah } from '@/data/qurban';
+import type { QurbanPricingTier } from '@/data/types';
 
-export function QurbanPricing() {
+interface QurbanPricingProps {
+  pricingTiers: QurbanPricingTier[];
+}
+
+export function QurbanPricing({ pricingTiers }: QurbanPricingProps) {
   return (
     <section className="relative py-20 md:py-28">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[hsl(var(--gold))]/[0.03] to-transparent" />
@@ -26,7 +31,7 @@ export function QurbanPricing() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {QURBAN_PRICING.map((item, index) => (
+          {pricingTiers.map((item, index) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 30 }}

@@ -20,6 +20,10 @@ import type {
   InfaqTarawihEntry,
   SantunanYatimEntry,
   ZisEntry,
+  QurbanConfig,
+  EventProgram,
+  EventCategory,
+  EventWinner,
 } from '../data/types';
 
 // ── Row Mappers ───────────────────────────────────────────────
@@ -215,6 +219,62 @@ function toFooter(row: any, socials: { platform: string; url: string }[]): Foote
     email:   row.email,
     mapsUrl: row.maps_url,
     socials: socials as FooterData['socials'],
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toQurbanConfig(row: any): QurbanConfig {
+  return {
+    yearLabel: row.year_label ?? '',
+    bankName: row.bank_name ?? '',
+    bankAccountNumber: row.bank_account_number ?? '',
+    bankAccountName: row.bank_account_name ?? '',
+    pricingTiers: row.pricing_tiers ?? [],
+    contacts: row.contacts ?? [],
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toEventWinner(row: any): EventWinner {
+  return {
+    id: row.id,
+    categoryId: row.category_id,
+    rankLabel: row.rank_label,
+    name: row.name,
+    badge: row.badge ?? '',
+    isHonorableMention: row.is_honorable_mention ?? false,
+    sortOrder: row.sort_order ?? 0,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toEventCategory(row: any, winners: EventWinner[]): EventCategory {
+  return {
+    id: row.id,
+    programId: row.program_id,
+    emoji: row.emoji ?? '',
+    name: row.name,
+    photoUrl: row.photo_url ?? '',
+    photoAlt: row.photo_alt ?? '',
+    sortOrder: row.sort_order ?? 0,
+    winners,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toEventProgram(row: any, categories: EventCategory[]): EventProgram {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    type: row.type ?? 'lomba',
+    yearLabel: row.year_label ?? '',
+    description: row.description ?? '',
+    documentationUrl: row.documentation_url ?? '',
+    isPublished: row.is_published ?? true,
+    isFeatured: row.is_featured ?? false,
+    sortOrder: row.sort_order ?? 0,
+    categories,
   };
 }
 
@@ -991,4 +1051,176 @@ export async function deleteZisEntry(id: string): Promise<void> {
   const { error } = await supabase.from('zis_entries').delete().eq('id', id);
   throwOnError(error);
   await logActivity('delete', 'zis_entries', id, 'Entry ZIS dihapus');
+}
+
+// ── Admin - Qurban Config ─────────────────────────────────────
+
+export async function fetchQurbanConfig(): Promise<QurbanConfig> {
+  const { data, error } = await supabase.from('qurban_config').select('*').single();
+  if (isSchemaMissingError(error)) {
+    return { yearLabel: '', bankName: '', bankAccountNumber: '', bankAccountName: '', pricingTiers: [], contacts: [] };
+  }
+  throwOnError(error);
+  return toQurbanConfig(data);
+}
+
+export async function saveQurbanConfig(data: QurbanConfig): Promise<void> {
+  const { error } = await supabase.from('qurban_config').upsert(
+    {
+      lock: true,
+      year_label: data.yearLabel,
+      bank_name: data.bankName,
+      bank_account_number: data.bankAccountNumber,
+      bank_account_name: data.bankAccountName,
+      pricing_tiers: data.pricingTiers,
+      contacts: data.contacts,
+    },
+    { onConflict: 'lock' }
+  );
+  throwOnError(error);
+  await logActivity('update', 'qurban_config', 'singleton', 'Konfigurasi qurban diperbarui');
+}
+
+// ── Admin - Event Programs (competitions / one-off events) ────
+
+export async function fetchEventPrograms(): Promise<EventProgram[]> {
+  const [programsRes, categoriesRes, winnersRes] = await Promise.all([
+    supabase.from('event_programs').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
+    supabase.from('event_categories').select('*').order('sort_order', { ascending: true }),
+    supabase.from('event_winners').select('*').order('sort_order', { ascending: true }),
+  ]);
+
+  if ([programsRes, categoriesRes, winnersRes].some((r) => isSchemaMissingError(r.error))) return [];
+  [programsRes, categoriesRes, winnersRes].forEach((r) => throwOnError(r.error));
+
+  const winners = (winnersRes.data ?? []).map(toEventWinner);
+  const categories = (categoriesRes.data ?? []).map((row) =>
+    toEventCategory(row, winners.filter((w) => w.categoryId === row.id))
+  );
+  return (programsRes.data ?? []).map((program) =>
+    toEventProgram(program, categories.filter((c) => c.programId === program.id))
+  );
+}
+
+export async function addEventProgram(
+  item: Omit<EventProgram, 'id' | 'categories'>
+): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('event_programs')
+    .insert({
+      slug: item.slug,
+      title: item.title,
+      type: item.type,
+      year_label: item.yearLabel,
+      description: item.description,
+      documentation_url: item.documentationUrl,
+      is_published: item.isPublished,
+      is_featured: item.isFeatured,
+      sort_order: item.sortOrder,
+    })
+    .select('id')
+    .single();
+  throwOnError(error);
+  await logActivity('create', 'event_programs', data!.id, `Program event ditambahkan: "${item.title}"`);
+  return { id: data!.id };
+}
+
+export async function updateEventProgram(item: Omit<EventProgram, 'categories'>): Promise<void> {
+  const { id, ...rest } = item;
+  const { error } = await supabase
+    .from('event_programs')
+    .update({
+      slug: rest.slug,
+      title: rest.title,
+      type: rest.type,
+      year_label: rest.yearLabel,
+      description: rest.description,
+      documentation_url: rest.documentationUrl,
+      is_published: rest.isPublished,
+      is_featured: rest.isFeatured,
+      sort_order: rest.sortOrder,
+    })
+    .eq('id', id);
+  throwOnError(error);
+  await logActivity('update', 'event_programs', id, `Program event diperbarui: "${item.title}"`);
+}
+
+export async function deleteEventProgram(id: string): Promise<void> {
+  const { error } = await supabase.from('event_programs').delete().eq('id', id);
+  throwOnError(error);
+  await logActivity('delete', 'event_programs', id, 'Program event dihapus');
+}
+
+export async function addEventCategory(
+  item: Omit<EventCategory, 'id' | 'winners'>
+): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('event_categories')
+    .insert({
+      program_id: item.programId,
+      emoji: item.emoji,
+      name: item.name,
+      photo_url: item.photoUrl,
+      photo_alt: item.photoAlt,
+      sort_order: item.sortOrder,
+    })
+    .select('id')
+    .single();
+  throwOnError(error);
+  return { id: data!.id };
+}
+
+export async function updateEventCategory(item: Omit<EventCategory, 'winners'>): Promise<void> {
+  const { error } = await supabase
+    .from('event_categories')
+    .update({
+      emoji: item.emoji,
+      name: item.name,
+      photo_url: item.photoUrl,
+      photo_alt: item.photoAlt,
+      sort_order: item.sortOrder,
+    })
+    .eq('id', item.id);
+  throwOnError(error);
+}
+
+export async function deleteEventCategory(id: string): Promise<void> {
+  const { error } = await supabase.from('event_categories').delete().eq('id', id);
+  throwOnError(error);
+}
+
+export async function addEventWinner(item: Omit<EventWinner, 'id'>): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('event_winners')
+    .insert({
+      category_id: item.categoryId,
+      rank_label: item.rankLabel,
+      name: item.name,
+      badge: item.badge,
+      is_honorable_mention: item.isHonorableMention,
+      sort_order: item.sortOrder,
+    })
+    .select('id')
+    .single();
+  throwOnError(error);
+  return { id: data!.id };
+}
+
+export async function updateEventWinner(item: EventWinner): Promise<void> {
+  const { error } = await supabase
+    .from('event_winners')
+    .update({
+      rank_label: item.rankLabel,
+      name: item.name,
+      badge: item.badge,
+      is_honorable_mention: item.isHonorableMention,
+      sort_order: item.sortOrder,
+    })
+    .eq('id', item.id);
+  throwOnError(error);
+}
+
+export async function deleteEventWinner(id: string): Promise<void> {
+  const { error } = await supabase.from('event_winners').delete().eq('id', id);
+  throwOnError(error);
 }

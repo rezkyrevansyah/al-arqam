@@ -2,6 +2,22 @@ import { defineRelations } from "drizzle-orm";
 import * as schema from "./schema";
 
 export const relations = defineRelations(schema, (r) => ({
+	eventCategories: {
+		eventProgram: r.one.eventPrograms({
+			from: r.eventCategories.programId,
+			to: r.eventPrograms.id
+		}),
+		eventWinners: r.many.eventWinners(),
+	},
+	eventPrograms: {
+		eventCategories: r.many.eventCategories(),
+	},
+	eventWinners: {
+		eventCategory: r.one.eventCategories({
+			from: r.eventWinners.categoryId,
+			to: r.eventCategories.id
+		}),
+	},
 	infaqTarawihEntries: {
 		transparencyProgram: r.one.transparencyPrograms({
 			from: r.infaqTarawihEntries.programId,

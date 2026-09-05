@@ -4,16 +4,24 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Copy, Check, Phone } from 'lucide-react';
 import Image from 'next/image';
-import { QURBAN_CONTACTS, QURBAN_BANK, toWhatsAppLink } from '@/data/qurban';
+import { toWhatsAppLink } from '@/data/qurban';
+import type { QurbanContactEntry } from '@/data/types';
 
 const WA_MESSAGE = "Assalamualaikum, saya ingin mendaftar Qurban di Masjid Al-Arqam Bekasi Utara";
 
-export function QurbanContact() {
+interface QurbanContactProps {
+  contacts: QurbanContactEntry[];
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
+}
+
+export function QurbanContact({ contacts, bankName, bankAccountNumber, bankAccountName }: QurbanContactProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(QURBAN_BANK.accountNumber);
+      await navigator.clipboard.writeText(bankAccountNumber);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
@@ -45,7 +53,7 @@ export function QurbanContact() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Contact Cards */}
           <div className="lg:col-span-3 space-y-4">
-            {QURBAN_CONTACTS.map((contact, index) => (
+            {contacts.map((contact, index) => (
               <motion.div
                 key={contact.phone}
                 initial={{ opacity: 0, x: -20 }}
@@ -111,10 +119,10 @@ export function QurbanContact() {
                     Transfer Bank
                   </p>
                   <h3 className="font-display text-lg font-bold text-[hsl(var(--foreground))]">
-                    {QURBAN_BANK.bank}
+                    {bankName}
                   </h3>
                   <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-                    a.n. {QURBAN_BANK.accountName}
+                    a.n. {bankAccountName}
                   </p>
                 </div>
               </div>
@@ -124,7 +132,7 @@ export function QurbanContact() {
                   Nomor Rekening
                 </p>
                 <p className="font-display text-xl font-bold text-[hsl(var(--foreground))] tracking-wider">
-                  {QURBAN_BANK.accountNumber}
+                  {bankAccountNumber}
                 </p>
               </div>
 

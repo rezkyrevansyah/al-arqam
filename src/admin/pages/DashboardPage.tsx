@@ -16,6 +16,8 @@ const pagePathMap: Record<AdminPage, string> = {
   galeri: '/galeri',
   donasi: '/donasi',
   transparansi: '/transparansi',
+  qurban: '/qurban',
+  'event-results': '/event-results',
   pengurus: '/pengurus',
   footer: '/footer',
 };

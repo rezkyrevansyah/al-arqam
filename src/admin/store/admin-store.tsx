@@ -18,6 +18,10 @@ import type {
   InfaqTarawihEntry,
   SantunanYatimEntry,
   ZisEntry,
+  QurbanConfig,
+  EventProgram,
+  EventCategory,
+  EventWinner,
 } from '../../data/types';
 import * as api from '../../services/api';
 import { invalidateCache } from '../../services/cache';
@@ -43,6 +47,8 @@ export type AdminPage =
   | 'galeri'
   | 'donasi'
   | 'transparansi'
+  | 'qurban'
+  | 'event-results'
   | 'pengurus'
   | 'footer';
 
@@ -77,6 +83,20 @@ interface AdminState {
 
   donation: DonationConfig;
   setDonation: (data: DonationConfig) => Promise<void>;
+
+  qurbanConfig: QurbanConfig;
+  setQurbanConfig: (data: QurbanConfig) => Promise<void>;
+
+  eventPrograms: EventProgram[];
+  addEventProgram: (item: Omit<EventProgram, 'id' | 'categories'>) => Promise<string | null>;
+  updateEventProgram: (id: string, item: Partial<Omit<EventProgram, 'id' | 'categories'>>) => Promise<void>;
+  deleteEventProgram: (id: string) => Promise<void>;
+  addEventCategory: (item: Omit<EventCategory, 'id' | 'winners'>) => Promise<string | null>;
+  updateEventCategory: (id: string, item: Partial<Omit<EventCategory, 'id' | 'winners'>>) => Promise<void>;
+  deleteEventCategory: (id: string) => Promise<void>;
+  addEventWinner: (item: Omit<EventWinner, 'id'>) => Promise<void>;
+  updateEventWinner: (id: string, item: Partial<Omit<EventWinner, 'id' | 'categoryId'>>) => Promise<void>;
+  deleteEventWinner: (id: string) => Promise<void>;
 
   transparencyPrograms: TransparencyProgram[];
   addTransparencyProgram: (item: Omit<TransparencyProgram, 'id' | 'metrics' | 'donors'>) => Promise<string | null>;
@@ -140,6 +160,10 @@ const defaultDonation: DonationConfig = {
 const defaultFooter: FooterData = {
   address: '', phone: '', email: '', mapsUrl: '', socials: [],
 };
+const defaultQurbanConfig: QurbanConfig = {
+  yearLabel: '', bankName: '', bankAccountNumber: '', bankAccountName: '',
+  pricingTiers: [], contacts: [],
+};
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [currentPage, setCurrentPage] = useState<AdminPage>('dashboard');
@@ -153,6 +177,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [articleList, setArticleList] = useState<Article[]>([]);
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
   const [donation, setDonationState] = useState<DonationConfig>(defaultDonation);
+  const [qurbanConfig, setQurbanConfigState] = useState<QurbanConfig>(defaultQurbanConfig);
+  const [eventPrograms, setEventPrograms] = useState<EventProgram[]>([]);
   const [transparencyPrograms, setTransparencyPrograms] = useState<TransparencyProgram[]>([]);
   const [boardList, setBoardList] = useState<BoardMember[]>([]);
   const [footer, setFooterState] = useState<FooterData>(defaultFooter);
@@ -176,9 +202,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     async function loadData() {
       try {
         setIsLoading(true);
-        const [h, c, ag, ar, gl, bd, dn, tp, ft] = await Promise.all([
+        const [h, c, ag, ar, gl, bd, dn, tp, ft, qc, ep] = await Promise.all([
           api.fetchHero(), api.fetchCountdown(), api.fetchAgenda(), api.fetchArticles(),
           api.fetchGallery(), api.fetchBoard(), api.fetchDonation(), api.fetchTransparencyPrograms(), api.fetchFooter(),
+          api.fetchQurbanConfig(), api.fetchEventPrograms(),
         ]);
         setHeroState(h);
         setCountdownState(c);
@@ -189,6 +216,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setDonationState(dn);
         setTransparencyPrograms(tp);
         setFooterState(ft);
+        setQurbanConfigState(qc);
+        setEventPrograms(ep);
         // Load categories in parallel
         await Promise.all([
           api.fetchCategories('agenda').then(setAgendaCategories),
@@ -371,6 +400,168 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       showToast('Donasi berhasil diperbarui');
     } catch (err) {
       showToast('Gagal menyimpan: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast]);
+
+  const setQurbanConfig = useCallback(async (data: QurbanConfig) => {
+    try {
+      setIsSaving(true);
+      await api.saveQurbanConfig(data);
+      setQurbanConfigState(data);
+      await revalidateSiteData();
+      showToast('Konfigurasi qurban berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal menyimpan: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast]);
+
+  const addEventProgram = useCallback(async (item: Omit<EventProgram, 'id' | 'categories'>) => {
+    try {
+      setIsSaving(true);
+      const result = await api.addEventProgram(item);
+      setEventPrograms(prev => [...prev, { ...item, id: result.id, categories: [] }]);
+      await revalidateSiteData();
+      showToast('Program event berhasil ditambahkan');
+      return result.id;
+    } catch (err) {
+      showToast('Gagal menambahkan program event: ' + (err as Error).message, 'error');
+      return null;
+    } finally { setIsSaving(false); }
+  }, [showToast]);
+
+  const updateEventProgram = useCallback(async (id: string, item: Partial<Omit<EventProgram, 'id' | 'categories'>>) => {
+    try {
+      setIsSaving(true);
+      const existing = eventPrograms.find(p => p.id === id);
+      if (!existing) return;
+      const updated = { ...existing, ...item };
+      await api.updateEventProgram(updated);
+      setEventPrograms(prev => prev.map(p => p.id === id ? updated : p));
+      await revalidateSiteData();
+      showToast('Program event berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal memperbarui program event: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast, eventPrograms]);
+
+  const deleteEventProgram = useCallback(async (id: string) => {
+    try {
+      setIsSaving(true);
+      await api.deleteEventProgram(id);
+      setEventPrograms(prev => prev.filter(p => p.id !== id));
+      await revalidateSiteData();
+      showToast('Program event berhasil dihapus');
+    } catch (err) {
+      showToast('Gagal menghapus program event: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast]);
+
+  const addEventCategory = useCallback(async (item: Omit<EventCategory, 'id' | 'winners'>) => {
+    try {
+      setIsSaving(true);
+      const result = await api.addEventCategory(item);
+      setEventPrograms(prev => prev.map(p =>
+        p.id === item.programId
+          ? { ...p, categories: [...p.categories, { ...item, id: result.id, winners: [] }] }
+          : p
+      ));
+      await revalidateSiteData();
+      showToast('Kategori lomba berhasil ditambahkan');
+      return result.id;
+    } catch (err) {
+      showToast('Gagal menambahkan kategori lomba: ' + (err as Error).message, 'error');
+      return null;
+    } finally { setIsSaving(false); }
+  }, [showToast]);
+
+  const updateEventCategory = useCallback(async (id: string, item: Partial<Omit<EventCategory, 'id' | 'winners'>>) => {
+    try {
+      setIsSaving(true);
+      const existing = eventPrograms.flatMap(p => p.categories).find(c => c.id === id);
+      if (!existing) return;
+      const updated = { ...existing, ...item };
+      await api.updateEventCategory(updated);
+      setEventPrograms(prev => prev.map(p => ({
+        ...p,
+        categories: p.categories.map(c => c.id === id ? updated : c),
+      })));
+      await revalidateSiteData();
+      showToast('Kategori lomba berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal memperbarui kategori lomba: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast, eventPrograms]);
+
+  const deleteEventCategory = useCallback(async (id: string) => {
+    try {
+      setIsSaving(true);
+      await api.deleteEventCategory(id);
+      setEventPrograms(prev => prev.map(p => ({
+        ...p,
+        categories: p.categories.filter(c => c.id !== id),
+      })));
+      await revalidateSiteData();
+      showToast('Kategori lomba berhasil dihapus');
+    } catch (err) {
+      showToast('Gagal menghapus kategori lomba: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast]);
+
+  const addEventWinner = useCallback(async (item: Omit<EventWinner, 'id'>) => {
+    try {
+      setIsSaving(true);
+      const result = await api.addEventWinner(item);
+      setEventPrograms(prev => prev.map(p => ({
+        ...p,
+        categories: p.categories.map(c =>
+          c.id === item.categoryId
+            ? { ...c, winners: [...c.winners, { ...item, id: result.id }] }
+            : c
+        ),
+      })));
+      await revalidateSiteData();
+      showToast('Pemenang berhasil ditambahkan');
+    } catch (err) {
+      showToast('Gagal menambahkan pemenang: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast]);
+
+  const updateEventWinner = useCallback(async (id: string, item: Partial<Omit<EventWinner, 'id' | 'categoryId'>>) => {
+    try {
+      setIsSaving(true);
+      const existing = eventPrograms.flatMap(p => p.categories).flatMap(c => c.winners).find(w => w.id === id);
+      if (!existing) return;
+      const updated = { ...existing, ...item };
+      await api.updateEventWinner(updated);
+      setEventPrograms(prev => prev.map(p => ({
+        ...p,
+        categories: p.categories.map(c => ({
+          ...c,
+          winners: c.winners.map(w => w.id === id ? updated : w),
+        })),
+      })));
+      await revalidateSiteData();
+      showToast('Pemenang berhasil diperbarui');
+    } catch (err) {
+      showToast('Gagal memperbarui pemenang: ' + (err as Error).message, 'error');
+    } finally { setIsSaving(false); }
+  }, [showToast, eventPrograms]);
+
+  const deleteEventWinner = useCallback(async (id: string) => {
+    try {
+      setIsSaving(true);
+      await api.deleteEventWinner(id);
+      setEventPrograms(prev => prev.map(p => ({
+        ...p,
+        categories: p.categories.map(c => ({
+          ...c,
+          winners: c.winners.filter(w => w.id !== id),
+        })),
+      })));
+      await revalidateSiteData();
+      showToast('Pemenang berhasil dihapus');
+    } catch (err) {
+      showToast('Gagal menghapus pemenang: ' + (err as Error).message, 'error');
     } finally { setIsSaving(false); }
   }, [showToast]);
 
@@ -841,6 +1032,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       articleList, addArticle, updateArticle, deleteArticle,
       galleryList, addGalleryItem, updateGalleryItem, deleteGalleryItem,
       donation, setDonation,
+      qurbanConfig, setQurbanConfig,
+      eventPrograms,
+      addEventProgram, updateEventProgram, deleteEventProgram,
+      addEventCategory, updateEventCategory, deleteEventCategory,
+      addEventWinner, updateEventWinner, deleteEventWinner,
       transparencyPrograms,
       addTransparencyProgram,
       updateTransparencyProgram,

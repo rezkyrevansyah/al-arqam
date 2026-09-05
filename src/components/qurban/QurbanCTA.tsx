@@ -3,11 +3,18 @@
 import { motion } from 'framer-motion';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { QURBAN_CONTACTS, toWhatsAppLink } from '@/data/qurban';
+import { toWhatsAppLink } from '@/data/qurban';
+import type { QurbanContactEntry } from '@/data/types';
 
 const WA_MESSAGE = "Assalamualaikum, saya ingin mendaftar Qurban di Masjid Al-Arqam Bekasi Utara";
 
-export function QurbanCTA() {
+interface QurbanCTAProps {
+  contacts: QurbanContactEntry[];
+}
+
+export function QurbanCTA({ contacts }: QurbanCTAProps) {
+  const primaryContact = contacts[0];
+
   return (
     <section className="relative py-16 md:py-20">
       <div className="max-w-3xl mx-auto px-6">
@@ -28,15 +35,17 @@ export function QurbanCTA() {
               Segera hubungi panitia untuk mendaftarkan hewan qurban Anda sebelum kuota habis
             </p>
 
-            <a
-              href={toWhatsAppLink(QURBAN_CONTACTS[0].phone, WA_MESSAGE)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-green-600 text-white rounded-2xl font-semibold text-sm hover:bg-green-700 transition-all duration-300 hover:shadow-xl hover:shadow-green-600/20 active:scale-95"
-            >
-              <MessageCircle className="w-5 h-5" />
-              Hubungi via WhatsApp
-            </a>
+            {primaryContact && (
+              <a
+                href={toWhatsAppLink(primaryContact.phone, WA_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-green-600 text-white rounded-2xl font-semibold text-sm hover:bg-green-700 transition-all duration-300 hover:shadow-xl hover:shadow-green-600/20 active:scale-95"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Hubungi via WhatsApp
+              </a>
+            )}
           </div>
         </motion.div>
 

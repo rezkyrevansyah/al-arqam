@@ -3,9 +3,12 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { QURBAN_YEAR } from '@/data/qurban';
 
-export function QurbanBanner() {
+interface QurbanBannerProps {
+  yearLabel: string;
+}
+
+export function QurbanBanner({ yearLabel }: QurbanBannerProps) {
   return (
     <section className="relative py-10 md:py-14">
       <div className="max-w-6xl mx-auto px-6">
@@ -35,7 +38,7 @@ export function QurbanBanner() {
                 </div>
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[hsl(var(--gold-light))]">
-                    Qurban Idul Adha {QURBAN_YEAR}
+                    Qurban Idul Adha {yearLabel}
                   </span>
                   <h3 className="font-display text-xl md:text-2xl font-bold text-[hsl(var(--primary-foreground))] mt-1">
                     Qurban Berkah Masjid Al-Arqam

@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, boolean, uuid, text, timestamp, date, integer, bigint, numeric, index, foreignKey, primaryKey, unique, check, pgPolicy } from "drizzle-orm/pg-core"
+import { pgEnum, pgTable, uuid, boolean, text, timestamp, date, integer, bigint, jsonb, numeric, index, foreignKey, primaryKey, unique, check, pgPolicy } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const agendaCategory = pgEnum("agenda_category", ["kajian", "sholat", "kegiatan", "rapat"])
@@ -24,12 +24,12 @@ export const agenda = pgTable.withRLS("agenda", {
 	id: uuid().defaultRandom().primaryKey(),
 	title: text().notNull(),
 	date: date().notNull(),
-	endDate: date("end_date"),
 	time: text().default("").notNull(),
 	location: text().default("").notNull(),
 	description: text().default("").notNull(),
 	category: agendaCategory().default("kegiatan").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+	endDate: date("end_date"),
 }, (table) => [
 
 	pgPolicy("anon_select_agenda", { for: "select", to: ["anon"], using: sql`true` }),
@@ -109,6 +109,62 @@ export const donationConfig = pgTable.withRLS("donation_config", {
 	pgPolicy("auth_all_donation", { to: ["authenticated"], using: sql`true`, withCheck: sql`true` }),
 check("donation_config_single_row", sql`(lock = true)`),]);
 
+export const eventCategories = pgTable.withRLS("event_categories", {
+	id: uuid().defaultRandom().primaryKey(),
+	programId: uuid("program_id").notNull().references(() => eventPrograms.id, { onDelete: "cascade" } ),
+	emoji: text().default("").notNull(),
+	name: text().notNull(),
+	photoUrl: text("photo_url").default("").notNull(),
+	photoAlt: text("photo_alt").default("").notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (table) => [
+
+	pgPolicy("Authenticated can manage event categories", { using: sql`(auth.role() = 'authenticated'::text)`, withCheck: sql`(auth.role() = 'authenticated'::text)` }),
+
+	pgPolicy("Public can view categories of published programs", { for: "select", using: sql`(EXISTS ( SELECT 1
+   FROM event_programs p
+  WHERE ((p.id = event_categories.program_id) AND (p.is_published = true))))` }),
+]);
+
+export const eventPrograms = pgTable.withRLS("event_programs", {
+	id: uuid().defaultRandom().primaryKey(),
+	slug: text().notNull(),
+	title: text().notNull(),
+	type: text().default("lomba").notNull(),
+	yearLabel: text("year_label").default("").notNull(),
+	description: text().default("").notNull(),
+	documentationUrl: text("documentation_url").default("").notNull(),
+	isPublished: boolean("is_published").default(true).notNull(),
+	isFeatured: boolean("is_featured").default(false).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (table) => [
+	unique("event_programs_slug_key").on(table.slug),
+	pgPolicy("Authenticated can manage event programs", { using: sql`(auth.role() = 'authenticated'::text)`, withCheck: sql`(auth.role() = 'authenticated'::text)` }),
+
+	pgPolicy("Public can view published event programs", { for: "select", using: sql`(is_published = true)` }),
+]);
+
+export const eventWinners = pgTable.withRLS("event_winners", {
+	id: uuid().defaultRandom().primaryKey(),
+	categoryId: uuid("category_id").notNull().references(() => eventCategories.id, { onDelete: "cascade" } ),
+	rankLabel: text("rank_label").notNull(),
+	name: text().notNull(),
+	badge: text().default("").notNull(),
+	isHonorableMention: boolean("is_honorable_mention").default(false).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true }).default(sql`now()`).notNull(),
+}, (table) => [
+
+	pgPolicy("Authenticated can manage event winners", { using: sql`(auth.role() = 'authenticated'::text)`, withCheck: sql`(auth.role() = 'authenticated'::text)` }),
+
+	pgPolicy("Public can view winners of published programs", { for: "select", using: sql`(EXISTS ( SELECT 1
+   FROM (event_categories c
+     JOIN event_programs p ON ((p.id = c.program_id)))
+  WHERE ((c.id = event_winners.category_id) AND (p.is_published = true))))` }),
+]);
+
 export const footerConfig = pgTable.withRLS("footer_config", {
 	lock: boolean().default(true).primaryKey(),
 	address: text().default("").notNull(),
@@ -165,6 +221,21 @@ export const infaqTarawihEntries = pgTable.withRLS("infaq_tarawih_entries", {
 
 	pgPolicy("Public read infaq", { for: "select", using: sql`true` }),
 ]);
+
+export const qurbanConfig = pgTable.withRLS("qurban_config", {
+	lock: boolean().default(true).primaryKey(),
+	yearLabel: text("year_label").default("").notNull(),
+	bankName: text("bank_name").default("").notNull(),
+	bankAccountNumber: text("bank_account_number").default("").notNull(),
+	bankAccountName: text("bank_account_name").default("").notNull(),
+	pricingTiers: jsonb("pricing_tiers").default([]).notNull(),
+	contacts: jsonb().default([]).notNull(),
+}, (table) => [
+
+	pgPolicy("Authenticated can manage qurban config", { using: sql`(auth.role() = 'authenticated'::text)`, withCheck: sql`(auth.role() = 'authenticated'::text)` }),
+
+	pgPolicy("Public can view qurban config", { for: "select", using: sql`true` }),
+check("qurban_config_lock_check", sql`(lock = true)`),]);
 
 export const santunanYatimEntries = pgTable.withRLS("santunan_yatim_entries", {
 	id: uuid().defaultRandom().primaryKey(),

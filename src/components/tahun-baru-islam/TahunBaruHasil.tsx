@@ -4,106 +4,27 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, RefreshCw, X } from 'lucide-react';
 import Image from 'next/image';
+import type { EventCategory } from '@/data/types';
+import { formatImageUrl } from '@/lib/utils';
 
-const DOKUMENTASI_URL = 'https://drive.google.com/drive/folders/1M09Dx97TFqut_13GC7gWSU3s0J7aIGke?usp=sharing';
+// Legacy seed photos are bundled `public/` assets (root-relative paths);
+// anything else is a Supabase Storage path uploaded via the admin panel.
+function resolvePhotoUrl(url: string): string {
+  if (!url) return '';
+  return url.startsWith('/') ? url : formatImageUrl(url);
+}
 
-type Pemenang = { rank: string; nama: string; badge: string };
+interface TahunBaruHasilProps {
+  title: string;
+  description: string;
+  documentationUrl: string;
+  categories: EventCategory[];
+}
 
-type Kategori = {
-  id: string;
-  emoji: string;
-  nama: string;
-  foto: string;
-  fotoAlt: string;
-  pemenang: Pemenang[];
-  harapan: Pemenang[];
-};
-
-const KATEGORI: Kategori[] = [
-  {
-    id: 'mewarnai',
-    emoji: '🎨',
-    nama: 'Lomba Mewarnai',
-    foto: '/juara_mewarnai.JPG',
-    fotoAlt: 'Foto pemenang Lomba Mewarnai Gema Muharram 1448H',
-    pemenang: [
-      { rank: 'Juara 1', nama: 'Della', badge: '🥇' },
-      { rank: 'Juara 2', nama: 'Dilla', badge: '🥈' },
-      { rank: 'Juara 3', nama: 'Ceisya Zia Amalisa', badge: '🥉' },
-    ],
-    harapan: [
-      { rank: 'Harapan 1', nama: 'Aretha Zayba Almira', badge: '🌟' },
-      { rank: 'Harapan 2', nama: 'Anfilda Arunika T', badge: '🌟' },
-    ],
-  },
-  {
-    id: 'suratpendek',
-    emoji: '📖',
-    nama: 'Hafalan Surat Pendek',
-    foto: '/juara_suratpendek.JPG',
-    fotoAlt: 'Foto pemenang Lomba Hafalan Surat Pendek Gema Muharram 1448H',
-    pemenang: [
-      { rank: 'Juara 1', nama: 'M. Fakhri Al Khalifi', badge: '🥇' },
-      { rank: 'Juara 2', nama: 'M. Khaizuran A.', badge: '🥈' },
-      { rank: 'Juara 3', nama: 'Syafiq Aziziya Miftahulaq', badge: '🥉' },
-    ],
-    harapan: [
-      { rank: 'Harapan 1', nama: 'Adzkiya Zhafirah R', badge: '🌟' },
-      { rank: 'Harapan 2', nama: 'Muazzam Khairi R. L', badge: '🌟' },
-    ],
-  },
-  {
-    id: 'hurufhijaiyah',
-    emoji: '🔤',
-    nama: 'Hafalan Huruf Hijaiyah',
-    foto: '/juara_hurufhijaiyah.JPG',
-    fotoAlt: 'Foto pemenang Lomba Hafalan Huruf Hijaiyah Gema Muharram 1448H',
-    pemenang: [
-      { rank: 'Juara 1', nama: 'Oceana Malika Azzahra', badge: '🥇' },
-      { rank: 'Juara 2', nama: 'Alima Hafizha Ahmad', badge: '🥈' },
-      { rank: 'Juara 3', nama: 'Mikhayla Noura Medina', badge: '🥉' },
-    ],
-    harapan: [
-      { rank: 'Harapan 1', nama: 'Azhar Baihaqi Agustian', badge: '🌟' },
-      { rank: 'Harapan 2', nama: 'Sinar', badge: '🌟' },
-    ],
-  },
-  {
-    id: 'adzan',
-    emoji: '📢',
-    nama: 'Lomba Adzan',
-    foto: '/juara_adzan.JPG',
-    fotoAlt: 'Foto pemenang Lomba Adzan Gema Muharram 1448H',
-    pemenang: [
-      { rank: 'Juara 1', nama: 'M. Fakhri Al Khalifi', badge: '🥇' },
-      { rank: 'Juara 2', nama: 'M. Bahrul Ilmi', badge: '🥈' },
-      { rank: 'Juara 3', nama: 'M. Khaizuran A.', badge: '🥉' },
-    ],
-    harapan: [
-      { rank: 'Harapan 1', nama: 'Ihlan', badge: '🌟' },
-      { rank: 'Harapan 2', nama: 'Reynand Sarwopradipta', badge: '🌟' },
-    ],
-  },
-  {
-    id: 'tilawatil',
-    emoji: '📚',
-    nama: 'Tilawatil Qur\'an',
-    foto: '/juara_tilawatil.JPG',
-    fotoAlt: 'Foto pemenang Lomba Tilawatil Qur\'an Gema Muharram 1448H',
-    pemenang: [
-      { rank: 'Juara 1', nama: 'Hania Syakira I.', badge: '🥇' },
-      { rank: 'Juara 2', nama: 'Rania Mikayla Putri', badge: '🥈' },
-      { rank: 'Juara 3', nama: 'M. Bahrul Ilmi', badge: '🥉' },
-    ],
-    harapan: [
-      { rank: 'Harapan 1', nama: 'Fakhri Ziya Ulhaq', badge: '🌟' },
-      { rank: 'Harapan 2', nama: 'M. Khaizuran A.', badge: '🌟' },
-    ],
-  },
-];
-
-function KategoriCard({ kategori, index }: { kategori: Kategori; index: number }) {
+function KategoriCard({ kategori, index }: { kategori: EventCategory; index: number }) {
   const [fotoOpen, setFotoOpen] = useState(false);
+  const pemenang = kategori.winners.filter((w) => !w.isHonorableMention);
+  const harapan = kategori.winners.filter((w) => w.isHonorableMention);
 
   return (
     <>
@@ -115,71 +36,75 @@ function KategoriCard({ kategori, index }: { kategori: Kategori; index: number }
         className="bg-white rounded-3xl shadow-sm border border-[hsl(var(--border))]/60 overflow-hidden"
       >
         {/* Foto */}
-        <button
-          onClick={() => setFotoOpen(true)}
-          className="group relative w-full block overflow-hidden"
-        >
-          <div className="relative w-full aspect-[4/3] overflow-hidden">
-            <Image
-              src={kategori.foto}
-              alt={kategori.fotoAlt}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white text-sm font-semibold bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                Perbesar Foto
-              </span>
+        {kategori.photoUrl && (
+          <button
+            onClick={() => setFotoOpen(true)}
+            className="group relative w-full block overflow-hidden"
+          >
+            <div className="relative w-full aspect-[4/3] overflow-hidden">
+              <Image
+                src={resolvePhotoUrl(kategori.photoUrl)}
+                alt={kategori.photoAlt || kategori.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white text-sm font-semibold bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                  Perbesar Foto
+                </span>
+              </div>
             </div>
-          </div>
-        </button>
+          </button>
+        )}
 
         {/* Konten */}
         <div className="p-6">
           <div className="flex items-center gap-3 mb-5">
             <span className="text-2xl">{kategori.emoji}</span>
             <h3 className="font-display text-lg font-bold text-[hsl(var(--foreground))]">
-              {kategori.nama}
+              {kategori.name}
             </h3>
           </div>
 
           <div className="space-y-2 mb-4">
-            {kategori.pemenang.map((p) => (
+            {pemenang.map((p) => (
               <div
-                key={p.rank}
+                key={p.id}
                 className="flex items-center gap-3 py-2 px-3 rounded-xl bg-[hsl(var(--background))] border border-[hsl(var(--border))]/40"
               >
                 <span className="text-xl flex-shrink-0">{p.badge}</span>
                 <div>
                   <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide leading-none mb-0.5">
-                    {p.rank}
+                    {p.rankLabel}
                   </p>
-                  <p className="text-sm font-bold text-[hsl(var(--foreground))]">{p.nama}</p>
+                  <p className="text-sm font-bold text-[hsl(var(--foreground))]">{p.name}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-[hsl(var(--border))]/40 pt-4 space-y-2">
-            {kategori.harapan.map((h) => (
-              <div key={h.rank} className="flex items-center gap-3 py-1.5 px-3 rounded-xl">
-                <span className="text-lg flex-shrink-0">{h.badge}</span>
-                <div>
-                  <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide leading-none mb-0.5">
-                    {h.rank}
-                  </p>
-                  <p className="text-sm font-medium text-[hsl(var(--foreground))]">{h.nama}</p>
+          {harapan.length > 0 && (
+            <div className="border-t border-[hsl(var(--border))]/40 pt-4 space-y-2">
+              {harapan.map((h) => (
+                <div key={h.id} className="flex items-center gap-3 py-1.5 px-3 rounded-xl">
+                  <span className="text-lg flex-shrink-0">{h.badge}</span>
+                  <div>
+                    <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide leading-none mb-0.5">
+                      {h.rankLabel}
+                    </p>
+                    <p className="text-sm font-medium text-[hsl(var(--foreground))]">{h.name}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </motion.div>
 
       {/* Fullscreen foto modal */}
       <AnimatePresence>
-        {fotoOpen && (
+        {fotoOpen && kategori.photoUrl && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -204,14 +129,14 @@ function KategoriCard({ kategori, index }: { kategori: Kategori; index: number }
               </button>
               <div className="relative w-full rounded-2xl overflow-hidden">
                 <Image
-                  src={kategori.foto}
-                  alt={kategori.fotoAlt}
+                  src={resolvePhotoUrl(kategori.photoUrl)}
+                  alt={kategori.photoAlt || kategori.name}
                   width={1200}
                   height={900}
                   className="w-full h-auto object-contain rounded-2xl"
                 />
               </div>
-              <p className="text-center text-white/70 text-sm mt-3 font-medium">{kategori.nama}</p>
+              <p className="text-center text-white/70 text-sm mt-3 font-medium">{kategori.name}</p>
             </motion.div>
           </motion.div>
         )}
@@ -220,7 +145,7 @@ function KategoriCard({ kategori, index }: { kategori: Kategori; index: number }
   );
 }
 
-export function TahunBaruHasil() {
+export function TahunBaruHasil({ title, description, documentationUrl, categories }: TahunBaruHasilProps) {
   return (
     <section className="relative py-12 md:py-20">
       <div className="max-w-5xl mx-auto px-6">
@@ -237,34 +162,36 @@ export function TahunBaruHasil() {
             Alhamdulillah
           </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-[hsl(var(--foreground))] mt-3 mb-4">
-            🏆 Hasil Lomba Gema Muharram 1448H
+            🏆 {title}
           </h2>
           <p className="text-[hsl(var(--muted-foreground))] max-w-xl mx-auto leading-relaxed">
-            Selamat kepada seluruh pemenang! Terima kasih atas semangat dan partisipasi semua peserta, orang tua, serta panitia yang telah menyukseskan acara ini.
+            {description}
           </p>
         </motion.div>
 
         {/* Tombol Dokumentasi */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex justify-center mb-5"
-        >
-          <a
-            href={DOKUMENTASI_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-[hsl(var(--gold))] hover:brightness-110 active:scale-95 transition-all duration-300 shadow-lg shadow-[hsl(var(--gold))]/30 hover:shadow-xl hover:shadow-[hsl(var(--gold))]/40"
+        {documentationUrl && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="flex justify-center mb-5"
           >
-            <span className="text-xl">📸</span>
-            <span className="font-bold text-base text-[hsl(var(--foreground))]">
-              Lihat Semua Dokumentasi
-            </span>
-            <ExternalLink className="w-5 h-5 text-[hsl(var(--foreground))] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
-          </a>
-        </motion.div>
+            <a
+              href={documentationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-[hsl(var(--gold))] hover:brightness-110 active:scale-95 transition-all duration-300 shadow-lg shadow-[hsl(var(--gold))]/30 hover:shadow-xl hover:shadow-[hsl(var(--gold))]/40"
+            >
+              <span className="text-xl">📸</span>
+              <span className="font-bold text-base text-[hsl(var(--foreground))]">
+                Lihat Semua Dokumentasi
+              </span>
+              <ExternalLink className="w-5 h-5 text-[hsl(var(--foreground))] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
+            </a>
+          </motion.div>
+        )}
 
         {/* Notes diperbarui */}
         <motion.div
@@ -283,7 +210,7 @@ export function TahunBaruHasil() {
 
         {/* Grid kategori */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {KATEGORI.map((kategori, index) => (
+          {categories.map((kategori, index) => (
             <KategoriCard key={kategori.id} kategori={kategori} index={index} />
           ))}
         </div>

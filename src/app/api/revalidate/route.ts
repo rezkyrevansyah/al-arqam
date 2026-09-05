@@ -7,6 +7,10 @@ export async function POST() {
   revalidatePath('/agenda');
   revalidatePath('/galeri');
   revalidatePath('/dashboard');
+  revalidatePath('/qurban');
+  revalidatePath('/kegiatan/qurban');
+  revalidatePath('/tahun-baru-islam');
+  revalidatePath('/kegiatan/tahun-baru-islam');
 
   // Revalidate the unstable_cache tags used in site-data.server.ts
   revalidateTag('home-site-data', 'max');
@@ -14,6 +18,10 @@ export async function POST() {
   revalidateTag('gallery-site-data', 'max');
   revalidateTag('articles-site-data', 'max');
   revalidateTag('footer-site-data', 'max');
+
+  // Revalidate the unstable_cache tags used in events.server.ts
+  revalidateTag('event-programs-site-data', 'max');
+  revalidateTag('qurban-config-site-data', 'max');
 
   return NextResponse.json({ revalidated: true });
 }

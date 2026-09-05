@@ -283,6 +283,69 @@ export interface SantunanYatimEntry {
 }
 
 // ============================================
+// QURBAN CONFIG
+// ============================================
+export interface QurbanPricingTier {
+  id: string;
+  label: string;
+  price: number;
+  note: string | null;
+  highlight: boolean;
+}
+
+export interface QurbanContactEntry {
+  name: string;
+  phone: string;
+}
+
+export interface QurbanConfig {
+  yearLabel: string;
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
+  pricingTiers: QurbanPricingTier[];
+  contacts: QurbanContactEntry[];
+}
+
+// ============================================
+// EVENT PROGRAMS (competitions / one-off events with results)
+// ============================================
+export interface EventWinner {
+  id: string;
+  categoryId: string;
+  rankLabel: string; // e.g. "Juara 1", "Harapan 1"
+  name: string;
+  badge: string; // emoji, e.g. "🥇"
+  isHonorableMention: boolean;
+  sortOrder: number;
+}
+
+export interface EventCategory {
+  id: string;
+  programId: string;
+  emoji: string;
+  name: string;
+  photoUrl: string;
+  photoAlt: string;
+  sortOrder: number;
+  winners: EventWinner[];
+}
+
+export interface EventProgram {
+  id: string;
+  slug: string;
+  title: string;
+  type: string;
+  yearLabel: string;
+  description: string;
+  documentationUrl: string;
+  isPublished: boolean;
+  isFeatured: boolean;
+  sortOrder: number;
+  categories: EventCategory[];
+}
+
+// ============================================
 // ZIS ENTRIES
 // ============================================
 export interface ZisEntry {

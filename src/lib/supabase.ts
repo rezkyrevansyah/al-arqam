@@ -18,7 +18,7 @@ export function getStorageUrl(path: string | undefined | null): string {
   return data.publicUrl;
 }
 
-export type ImageFolder = 'gallery' | 'articles' | 'board' | 'donation';
+export type ImageFolder = 'gallery' | 'articles' | 'board' | 'donation' | 'events';
 
 /**
  * Upload file ke Supabase Storage.

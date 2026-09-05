@@ -5,6 +5,7 @@ import { logout } from '../../services/api';
 import {
   LayoutDashboard, Type, Timer, CalendarDays, Newspaper,
   Image, Heart, Users, Globe, ChevronLeft, ChevronRight, LogOut, BarChart3,
+  HeartHandshake, Trophy,
 } from 'lucide-react';
 
 const menuItems: { key: AdminPage; label: string; icon: typeof LayoutDashboard; group?: string; path: string }[] = [
@@ -16,6 +17,8 @@ const menuItems: { key: AdminPage; label: string; icon: typeof LayoutDashboard; 
   { key: 'galeri', label: 'Galeri', icon: Image, group: 'Konten', path: '/galeri' },
   { key: 'donasi', label: 'Donasi', icon: Heart, group: 'Konten', path: '/donasi' },
   { key: 'transparansi', label: 'Dashboard Transparansi', icon: BarChart3, group: 'Konten', path: '/transparansi' },
+  { key: 'qurban', label: 'Qurban', icon: HeartHandshake, group: 'Konten', path: '/qurban' },
+  { key: 'event-results', label: 'Hasil Lomba & Event', icon: Trophy, group: 'Konten', path: '/event-results' },
   { key: 'pengurus', label: 'Pengurus DKM', icon: Users, group: 'Organisasi', path: '/pengurus' },
   { key: 'footer', label: 'Footer', icon: Globe, group: 'Pengaturan', path: '/footer' },
 ];

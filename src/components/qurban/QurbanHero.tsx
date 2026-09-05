@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Maximize2 } from 'lucide-react';
 import Image from 'next/image';
-import { QURBAN_YEAR } from '@/data/qurban';
 
-export function QurbanHero() {
+interface QurbanHeroProps {
+  yearLabel: string;
+}
+
+export function QurbanHero({ yearLabel }: QurbanHeroProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   return (
@@ -23,13 +26,13 @@ export function QurbanHero() {
             className="text-center mb-10"
           >
             <span className="section-ornament text-sm font-semibold uppercase tracking-[0.2em] text-[hsl(var(--gold))]">
-              Qurban Idul Adha {QURBAN_YEAR}
+              Qurban Idul Adha {yearLabel}
             </span>
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-[hsl(var(--foreground))] mt-4">
               Qurban Berkah
             </h1>
             <p className="mt-4 text-[hsl(var(--muted-foreground))] max-w-xl mx-auto text-base md:text-lg">
-              Panitia Qurban Masjid Al-Arqam Bekasi Utara {QURBAN_YEAR} Menerima & Menyalurkan Hewan Qurban
+              Panitia Qurban Masjid Al-Arqam Bekasi Utara {yearLabel} Menerima & Menyalurkan Hewan Qurban
             </p>
           </motion.div>
 

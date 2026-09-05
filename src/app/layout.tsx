@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans, Amiri } from "next/font/google"; // eslint-disable-line
 import "./globals.css";
+import { ChatWidget } from "@/components/chat";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -130,6 +131,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         {children}
+        <ChatWidget />
       </body>
     </html>
   );
