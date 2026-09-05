@@ -22,6 +22,7 @@ function toAgenda(row: any): AgendaItem {
     id: row.id,
     title: row.title,
     date: row.date,
+    endDate: row.end_date ?? null,
     time: row.time,
     location: row.location,
     description: row.description,
@@ -120,7 +121,7 @@ async function fetchHomeSiteDataUncached(): Promise<AllSiteData> {
       supabase.from("countdown_config").select("name, date, description, active").single(),
       supabase
         .from("agenda")
-        .select("id, title, date, time, location, description, category")
+        .select("id, title, date, end_date, time, location, description, category")
         .order("date", { ascending: true }),
       supabase
         .from("articles")
@@ -162,7 +163,7 @@ async function fetchAgendaUncached(): Promise<AgendaItem[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("agenda")
-    .select("id, title, date, time, location, description, category")
+    .select("id, title, date, end_date, time, location, description, category")
     .order("date", { ascending: true });
 
   throwOnError(error);

@@ -12,11 +12,13 @@
 // AGENDA / KEGIATAN
 // ============================================
 export type AgendaCategory = string;
+export type AgendaStatus = 'akan_datang' | 'sedang_berlangsung' | 'selesai';
 
 export interface AgendaItem {
   id: string;
   title: string;
-  date: string; // ISO date: YYYY-MM-DD
+  date: string; // ISO date: YYYY-MM-DD (Start Date)
+  endDate?: string | null; // ISO date: YYYY-MM-DD (Optional End Date for multi-day events)
   time: string; // e.g., "18:30 WIB"
   location: string;
   description: string;

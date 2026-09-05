@@ -11,7 +11,6 @@ import { Pengurus } from '@/components/Pengurus';
 import { Donation } from '@/components/Donation';
 import { Footer } from '@/components/Footer';
 import { InfaqSection } from '@/components/InfaqSection';
-import { TahunBaruBanner } from '@/components/TahunBaruBanner';
 import { HomeClient } from '@/components/HomeClient';
 import { RealtimeRefresher } from '@/components/RealtimeRefresher';
 import { Providers } from './providers';
@@ -44,7 +43,6 @@ export default async function Home() {
           <GalleryPreview />
           <InfaqSection />
           <Countdown />
-          <TahunBaruBanner />
           <PrayerTimesSection prayerTimes={prayerTimes} />
           <Agenda />
           <Articles />

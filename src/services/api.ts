@@ -30,6 +30,7 @@ function toAgenda(row: any): AgendaItem {
     id:          row.id,
     title:       row.title,
     date:        row.date,
+    endDate:     row.end_date ?? null,
     time:        row.time,
     location:    row.location,
     description: row.description,
@@ -475,7 +476,12 @@ export async function saveCountdown(data: CountdownEvent): Promise<void> {
 // ── Admin Mutations - Agenda ──────────────────────────────────
 
 export async function addAgenda(item: Omit<AgendaItem, 'id'>): Promise<{ success: boolean; id: string }> {
-  const payload = { ...item, category: item.category.toLowerCase() };
+  const { endDate, ...rest } = item;
+  const payload = {
+    ...rest,
+    end_date: endDate && endDate.trim() ? endDate : null,
+    category: item.category.toLowerCase(),
+  };
   const { data, error } = await supabase.from('agenda').insert(payload).select('id').single();
   throwOnError(error);
   await logActivity('create', 'agenda', data!.id, `Agenda ditambahkan: "${item.title}"`);
@@ -483,8 +489,12 @@ export async function addAgenda(item: Omit<AgendaItem, 'id'>): Promise<{ success
 }
 
 export async function updateAgenda(item: AgendaItem): Promise<void> {
-  const { id, ...rest } = item;
-  const payload = { ...rest, category: rest.category.toLowerCase() };
+  const { id, endDate, ...rest } = item;
+  const payload = {
+    ...rest,
+    end_date: endDate && endDate.trim() ? endDate : null,
+    category: rest.category.toLowerCase(),
+  };
   const { error } = await supabase.from('agenda').update(payload).eq('id', id);
   throwOnError(error);
   await logActivity('update', 'agenda', id, `Agenda diperbarui: "${item.title}"`);

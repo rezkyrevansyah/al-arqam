@@ -41,6 +41,11 @@ export function Hero() {
     }
   };
 
+  const hasAgenda = (data?.agenda || []).length > 0;
+  const hasDonation = Boolean(
+    data?.donation?.bankAccountNumber?.trim() || data?.donation?.qrisImageUrl?.trim()
+  );
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background patterns */}
@@ -124,25 +129,31 @@ export function Hero() {
           {description}
         </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.4 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <button
-            onClick={() => scrollToSection('agenda')}
-            className="px-8 py-3.5 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-2xl font-semibold text-sm hover:bg-[hsl(var(--primary))]/90 transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(var(--primary))]/15 active:scale-95"
+        {(hasAgenda || hasDonation) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.4 }}
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            Lihat Agenda Kegiatan
-          </button>
-          <button
-            onClick={() => scrollToSection('donasi')}
-            className="px-8 py-3.5 border-2 border-[hsl(var(--gold))] text-[hsl(var(--gold))] rounded-2xl font-semibold text-sm hover:bg-[hsl(var(--gold))]/10 transition-all duration-300 active:scale-95"
-          >
-            Salurkan Donasi
-          </button>
-        </motion.div>
+            {hasAgenda && (
+              <button
+                onClick={() => scrollToSection('agenda')}
+                className="px-8 py-3.5 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-2xl font-semibold text-sm hover:bg-[hsl(var(--primary))]/90 transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(var(--primary))]/15 active:scale-95"
+              >
+                Lihat Agenda Kegiatan
+              </button>
+            )}
+            {hasDonation && (
+              <button
+                onClick={() => scrollToSection('donasi')}
+                className="px-8 py-3.5 border-2 border-[hsl(var(--gold))] text-[hsl(var(--gold))] rounded-2xl font-semibold text-sm hover:bg-[hsl(var(--gold))]/10 transition-all duration-300 active:scale-95"
+              >
+                Salurkan Donasi
+              </button>
+            )}
+          </motion.div>
+        )}
       </div>
 
       {/* Scroll indicator */}

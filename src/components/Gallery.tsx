@@ -2,38 +2,25 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ZoomIn, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatImageUrl } from '../lib/utils';
 import MorphSlider from './MorphSlider';
 
-function GallerySkeleton() {
-  return (
-    <section id="galeri" className="relative py-24 md:py-32">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <div className="skeleton h-4 w-32 mx-auto mb-4" />
-          <div className="skeleton h-12 w-56 mx-auto mb-4" />
-          <div className="skeleton h-4 w-80 max-w-full mx-auto" />
-        </div>
-        <div className="skeleton w-full h-[420px] sm:h-[500px] md:h-[560px] rounded-xl sm:rounded-2xl" />
-      </div>
-    </section>
-  );
-}
-
 export function Gallery() {
   const { data } = useSiteData();
+
+  if (!data) return null;
 
   const galleryData = data?.gallery || [];
   const landingGallery = galleryData.slice(0, 8);
 
-  if (!data) return <GallerySkeleton />;
-
   const sliderItems = landingGallery.map((item) => ({
     image: formatImageUrl(item.image),
-    caption: item.title
+    caption: item.title,
   }));
+
+  if (sliderItems.length === 0) return null;
 
   return (
     <section id="galeri" className="relative py-24 md:py-32">
@@ -58,63 +45,42 @@ export function Gallery() {
         </motion.div>
 
         {/* Gallery Content */}
-        {sliderItems.length > 0 ? (
-          <>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative w-full h-[420px] sm:h-[500px] md:h-[560px]"
-            >
-              <MorphSlider
-                items={sliderItems}
-                transition="melt"
-                intensity={0.55}
-                aberration={0.35}
-                drift={0.4}
-                radius={20}
-                overlayColor="#0e1b16"
-                autoplay
-                loop
-              />
-            </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="relative w-full h-[420px] sm:h-[500px] md:h-[560px]"
+        >
+          <MorphSlider
+            items={sliderItems}
+            transition="melt"
+            intensity={0.55}
+            aberration={0.35}
+            drift={0.4}
+            radius={20}
+            overlayColor="#0e1b16"
+            autoplay
+            loop
+          />
+        </motion.div>
 
-            {/* View All Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-10 text-center"
-            >
-              <Link
-                href="/galeri"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-full font-medium hover:opacity-90 transition-all hover:gap-3 group"
-              >
-                Lihat Semua Galeri
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </motion.div>
-          </>
-        ) : (
-          /* Empty State */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16"
+        {/* View All Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-10 text-center"
+        >
+          <Link
+            href="/galeri"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-full font-medium hover:opacity-90 transition-all hover:gap-3 group"
           >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center">
-              <ZoomIn className="w-10 h-10 text-[hsl(var(--muted-foreground))]" />
-            </div>
-            <h3 className="text-xl font-semibold text-[hsl(var(--foreground))] mb-2">
-              Belum Ada Foto
-            </h3>
-            <p className="text-[hsl(var(--muted-foreground))] text-sm max-w-md mx-auto">
-              Saat ini belum ada dokumentasi kegiatan yang tersedia.
-            </p>
-          </motion.div>
-        )}
+            Lihat Semua Galeri
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </motion.div>
       </div>
     </section>
   );

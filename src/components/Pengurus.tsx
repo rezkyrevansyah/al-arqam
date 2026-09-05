@@ -7,39 +7,6 @@ import { Pause, Play, Users } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatImageUrl } from '../lib/utils';
 
-function PengurusSkeleton() {
-  return (
-    <section id="tentang" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--primary))]/[0.02] to-transparent overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <div className="skeleton h-4 w-40 mx-auto mb-4" />
-          <div className="skeleton h-12 w-52 mx-auto mb-4" />
-          <div className="skeleton h-4 w-96 max-w-full mx-auto" />
-        </div>
-        <div className="flex items-center justify-center gap-3 mb-10">
-          <div className="skeleton h-10 w-36 rounded-xl" />
-          <div className="skeleton h-10 w-32 rounded-xl" />
-        </div>
-      </div>
-      <div className="overflow-hidden">
-        <div className="flex gap-6 px-6">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex-shrink-0 w-60">
-              <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl overflow-hidden">
-                <div className="skeleton h-64 w-full rounded-none" />
-                <div className="p-5 text-center">
-                  <div className="skeleton h-5 w-32 mx-auto mb-2" />
-                  <div className="skeleton h-4 w-24 mx-auto" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function Pengurus() {
   const { data } = useSiteData();
   const [isPaused, setIsPaused] = useState(false);
@@ -47,52 +14,7 @@ export function Pengurus() {
   const managementData = data?.board || [];
   const duplicatedMembers = [...managementData, ...managementData];
 
-  if (!data) return <PengurusSkeleton />;
-
-  // Empty state check
-  if (managementData.length === 0) {
-    return (
-      <section id="tentang" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--primary))]/[0.02] to-transparent overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7 }}
-            className="text-center mb-16"
-          >
-            <span className="section-ornament text-sm font-semibold uppercase tracking-[0.2em] text-[hsl(var(--gold))]">
-              Struktur Organisasi
-            </span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-[hsl(var(--foreground))] mt-4">
-              Pengurus DKM
-            </h2>
-            <p className="mt-4 text-[hsl(var(--muted-foreground))] max-w-xl mx-auto">
-              Susunan kepengurusan Dewan Kemakmuran Masjid Jami' Al-Arqom
-            </p>
-          </motion.div>
-
-          {/* Empty State */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16"
-          >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center">
-              <Users className="w-10 h-10 text-[hsl(var(--muted-foreground))]" />
-            </div>
-            <h3 className="text-xl font-semibold text-[hsl(var(--foreground))] mb-2">
-              Belum Ada Data Pengurus
-            </h3>
-            <p className="text-[hsl(var(--muted-foreground))] text-sm max-w-md mx-auto">
-              Data pengurus DKM belum tersedia saat ini.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-    );
-  }
+  if (!data || managementData.length === 0) return null;
 
   return (
     <section id="tentang" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--primary))]/[0.02] to-transparent overflow-hidden">

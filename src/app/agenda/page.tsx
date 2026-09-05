@@ -3,9 +3,24 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Calendar, Clock, MapPin, BookOpen, Moon, Users, MessageSquare, Home, ChevronDown, CheckCircle2, ChevronUp } from 'lucide-react';
+import { 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  BookOpen, 
+  Moon, 
+  Users, 
+  MessageSquare, 
+  Home, 
+  ChevronDown, 
+  CheckCircle2, 
+  Radio,
+  ChevronUp,
+  CalendarDays
+} from 'lucide-react';
 import { useSiteData } from '@/contexts/SiteDataContext';
 import type { AgendaCategory } from '@/data/types';
+import { getAgendaStatus, formatAgendaDateRange } from '@/utils/agenda';
 
 const CATEGORY_OPTIONS = [
   { key: 'all', label: 'Semua Kategori', icon: Calendar },
@@ -45,15 +60,14 @@ export default function AgendaPage() {
   // Find the latest agenda date for default filter
   const getDefaultFilter = () => {
     if (agendaData.length === 0) return { month: 'all', year: 'all' };
-    
-    // Sort by date descending to get the latest one
+
     const latestAgenda = [...agendaData].sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     )[0];
 
     const date = new Date(latestAgenda.date);
     return {
-      month: date.getMonth().toString(), // 0-11
+      month: date.getMonth().toString(),
       year: date.getFullYear().toString()
     };
   };
@@ -61,10 +75,11 @@ export default function AgendaPage() {
   const defaultFilter = getDefaultFilter();
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeStatus, setActiveStatus] = useState<string>('all');
   const [activeMonth, setActiveMonth] = useState<string>(defaultFilter.month);
   const [activeYear, setActiveYear] = useState<string>(defaultFilter.year);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  
+
   // Update default filter when data loads
   useEffect(() => {
     if (agendaData.length > 0) {
@@ -98,14 +113,18 @@ export default function AgendaPage() {
     const matchesMonth = activeMonth === 'all' || itemDate.getMonth().toString() === activeMonth;
     const matchesYear = activeYear === 'all' || itemDate.getFullYear().toString() === activeYear;
     
-    return matchesCategory && matchesMonth && matchesYear;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending (newest first)
+    const { status } = getAgendaStatus(item.date, item.endDate);
+    const matchesStatus = activeStatus === 'all' || status === activeStatus;
 
-  const isPastEvent = (dateStr: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return new Date(dateStr) < today;
-  };
+    return matchesCategory && matchesMonth && matchesYear && matchesStatus;
+  }).sort((a, b) => {
+    // Sort ongoing first, then by date ascending/descending
+    const statusA = getAgendaStatus(a.date, a.endDate).status;
+    const statusB = getAgendaStatus(b.date, b.endDate).status;
+    if (statusA === 'sedang_berlangsung' && statusB !== 'sedang_berlangsung') return -1;
+    if (statusB === 'sedang_berlangsung' && statusA !== 'sedang_berlangsung') return 1;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
 
   if (loading && agendaData.length === 0) {
     return (
@@ -120,13 +139,20 @@ export default function AgendaPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[hsl(var(--background))]/80 backdrop-blur-xl border-b border-[hsl(var(--border))]">
         <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-between">
             <Link 
-              href="/#agenda" 
-              className="flex items-center gap-2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors"
+              href="/" 
+              className="flex items-center gap-2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] transition-colors text-sm font-medium"
             >
               <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Kembali ke Beranda</span>
+              <span>Beranda</span>
+            </Link>
+
+            <Link
+              href="/kegiatan"
+              className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/20 transition-colors"
+            >
+              <span>Pusat Kegiatan Masjid</span>
             </Link>
           </div>
         </div>
@@ -142,13 +168,13 @@ export default function AgendaPage() {
           className="text-center mb-12"
         >
           <span className="section-ornament text-sm font-semibold uppercase tracking-[0.2em] text-[hsl(var(--gold))]">
-            Jadwal Kegiatan
+            Jadwal & Agenda
           </span>
           <h1 className="font-display text-4xl md:text-5xl font-bold text-[hsl(var(--foreground))] mt-4">
-            Agenda Masjid
+            Kalender Agenda Masjid
           </h1>
           <p className="mt-4 text-[hsl(var(--muted-foreground))] max-w-xl mx-auto">
-            Informasi lengkap jadwal kegiatan, kajian, dan acara di Masjid Jami' Al-Arqom.
+            Informasi lengkap jadwal kegiatan, kajian, dan acara ibadah di Masjid Jami' Al-Arqam dengan deteksi status otomatis.
           </p>
         </motion.div>
 
@@ -157,9 +183,37 @@ export default function AgendaPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl p-6 mb-12 shadow-sm"
+          className="bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl p-6 mb-12 shadow-sm space-y-4"
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Status Filter Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[hsl(var(--border))]/50 scrollbar-none">
+            <span className="text-xs font-semibold text-[hsl(var(--muted-foreground))] mr-2 flex-shrink-0">
+              Status:
+            </span>
+            {[
+              { id: 'all', label: 'Semua' },
+              { id: 'sedang_berlangsung', label: '🟢 Sedang Berlangsung' },
+              { id: 'akan_datang', label: '🔵 Akan Datang' },
+              { id: 'selesai', label: '⚪ Selesai' },
+            ].map((tab) => {
+              const isActive = activeStatus === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveStatus(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                    isActive
+                      ? 'bg-[hsl(var(--primary))] text-white shadow-xs'
+                      : 'bg-[hsl(var(--muted))]/50 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-2">
             {/* Category Filter */}
             <div className="flex flex-wrap items-center justify-center gap-2 w-full md:w-auto">
               {CATEGORY_OPTIONS.map((option) => {
@@ -221,8 +275,11 @@ export default function AgendaPage() {
           <AnimatePresence mode="popLayout">
             {filteredAgenda.length > 0 ? (
               filteredAgenda.map((item) => {
-                const isPast = isPastEvent(item.date);
-                
+                const statusInfo = getAgendaStatus(item.date, item.endDate);
+                const formattedDateRange = formatAgendaDateRange(item.date, item.endDate);
+                const isOngoing = statusInfo.status === 'sedang_berlangsung';
+                const isPast = statusInfo.status === 'selesai';
+
                 return (
                   <motion.div
                     key={item.id}
@@ -232,27 +289,42 @@ export default function AgendaPage() {
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.3 }}
                     className={`group relative border rounded-2xl p-6 transition-all duration-300 flex flex-col h-full ${
-                      isPast 
-                        ? 'bg-[hsl(var(--muted))]/30 border-[hsl(var(--border))]/50 grayscale-[0.5] hover:grayscale-0' 
+                      isOngoing
+                        ? 'bg-white border-emerald-500/50 shadow-lg shadow-emerald-500/10 ring-2 ring-emerald-500/20'
+                        : isPast
+                        ? 'bg-[hsl(var(--muted))]/25 border-[hsl(var(--border))]/50 grayscale-[0.4] hover:grayscale-0'
                         : 'bg-[hsl(var(--card))] border-[hsl(var(--border))]/60 hover:border-[hsl(var(--primary))]/20 hover:shadow-xl hover:shadow-[hsl(var(--primary))]/5'
                     }`}
                   >
-                    {/* Past Event Badge */}
-                    {isPast && (
-                      <div className="absolute top-4 right-4 z-10">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] text-xs font-semibold rounded-full border border-[hsl(var(--border))]">
-                          <CheckCircle2 className="w-3 h-3" />
-                          Selesai
-                        </span>
-                      </div>
-                    )}
+                    {/* Top Status & Category Badges */}
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.badgeClass}`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotClass}`} />
+                        {statusInfo.label}
+                      </span>
+
+                      <span
+                        className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full border ${
+                          CATEGORY_STYLES[item.category as AgendaCategory] || 'bg-gray-50 text-gray-700 border-gray-200'
+                        } ${isPast ? 'opacity-60' : ''}`}
+                      >
+                        {item.category.toUpperCase()}
+                      </span>
+                    </div>
 
                     <div className="flex items-start gap-4 mb-4">
-                      <div className={`flex flex-col items-center rounded-xl px-3 py-2 min-w-[3.5rem] ${
-                        isPast 
-                          ? 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]' 
-                          : 'bg-[hsl(var(--primary))]/5 text-[hsl(var(--primary))]'
-                      }`}>
+                      {/* Date Block */}
+                      <div
+                        className={`flex flex-col items-center rounded-xl px-3 py-2 min-w-[3.5rem] shrink-0 text-center ${
+                          isOngoing
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : isPast
+                            ? 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'
+                            : 'bg-[hsl(var(--primary))]/5 text-[hsl(var(--primary))]'
+                        }`}
+                      >
                         <span className="font-display text-2xl font-bold leading-none">
                           {new Date(item.date).getDate()}
                         </span>
@@ -260,86 +332,67 @@ export default function AgendaPage() {
                           {new Date(item.date).toLocaleDateString('id-ID', { month: 'short' })}
                         </span>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${CATEGORY_STYLES[item.category as AgendaCategory]} ${isPast ? 'opacity-60' : ''}`}>
-                            {item.category.toUpperCase()}
-                          </span>
-                          {/* Year badge if not current year */}
-                          {new Date(item.date).getFullYear() !== new Date().getFullYear() && (
-                            <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] px-2 py-0.5 bg-[hsl(var(--muted))] rounded-full">
-                              {new Date(item.date).getFullYear()}
-                            </span>
-                          )}
-                        </div>
-                        <h3 className={`font-semibold text-lg leading-tight ${
-                          isPast ? 'text-[hsl(var(--muted-foreground))]' : 'text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))]'
-                        } transition-colors`}>
+
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className={`font-semibold text-lg leading-snug line-clamp-2 ${
+                            isPast
+                              ? 'text-[hsl(var(--muted-foreground))]'
+                              : 'text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))]'
+                          } transition-colors`}
+                        >
                           {item.title}
                         </h3>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))] flex items-center gap-1 mt-1 font-medium">
+                          <Calendar className="w-3.5 h-3.5 text-[hsl(var(--gold))]" />
+                          <span>{formattedDateRange}</span>
+                        </p>
                       </div>
                     </div>
 
-                    <p className={`text-sm mb-6 line-clamp-2 flex-1 ${
-                      isPast ? 'text-[hsl(var(--muted-foreground))]/70' : 'text-[hsl(var(--muted-foreground))]'
-                    }`}>
-                      {item.description}
-                    </p>
+                    {item.description && (
+                      <p
+                        className={`text-sm mb-6 line-clamp-2 flex-1 ${
+                          isPast ? 'text-[hsl(var(--muted-foreground))]/70' : 'text-[hsl(var(--muted-foreground))]'
+                        }`}
+                      >
+                        {item.description}
+                      </p>
+                    )}
 
-                    <div className={`flex items-center gap-5 text-xs mt-auto pt-4 border-t border-[hsl(var(--border))]/50 ${
-                      isPast ? 'text-[hsl(var(--muted-foreground))]/70' : 'text-[hsl(var(--muted-foreground))]'
-                    }`}>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" />
-                        {item.time}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span className="truncate max-w-[120px]">{item.location}</span>
-                      </div>
+                    <div
+                      className={`flex items-center gap-5 text-xs mt-auto pt-4 border-t border-[hsl(var(--border))]/50 ${
+                        isPast ? 'text-[hsl(var(--muted-foreground))]/70' : 'text-[hsl(var(--muted-foreground))]'
+                      }`}
+                    >
+                      {item.time && (
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{item.time}</span>
+                        </div>
+                      )}
+                      {item.location && (
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="truncate max-w-[140px]">{item.location}</span>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 );
               })
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="col-span-full text-center py-20"
-              >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center">
-                  <Calendar className="w-10 h-10 text-[hsl(var(--muted-foreground))]" />
-                </div>
-                <h3 className="text-xl font-semibold text-[hsl(var(--foreground))] mb-2">
-                  Tidak Ada Agenda
-                </h3>
-                <p className="text-[hsl(var(--muted-foreground))]">
-                  Tidak ditemukan agenda dengan filter yang dipilih.
+              <div className="col-span-full text-center py-16 bg-[hsl(var(--card))] rounded-2xl border border-[hsl(var(--border))]/60">
+                <Calendar className="w-12 h-12 text-[hsl(var(--muted-foreground))]/40 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-[hsl(var(--foreground))]">Tidak Ada Agenda</h3>
+                <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
+                  Tidak ditemukan jadwal kegiatan untuk kriteria filter yang dipilih.
                 </p>
-                <button 
-                  onClick={() => {
-                    setActiveCategory('all');
-                    setActiveMonth('all');
-                    setActiveYear('all');
-                  }}
-                  className="mt-6 text-sm font-medium text-[hsl(var(--primary))] hover:underline"
-                >
-                  Reset Filter
-                </button>
-              </motion.div>
+              </div>
             )}
           </AnimatePresence>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="py-8 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] mt-16">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            © {new Date().getFullYear()} Masjid Jami' Al-Arqom. Semua Hak Dilindungi.
-          </p>
-        </div>
-      </footer>
 
       {/* Back to Top Button */}
       <AnimatePresence>
@@ -349,7 +402,8 @@ export default function AgendaPage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-6 right-6 w-12 h-12 bg-[hsl(var(--primary))] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[hsl(var(--primary))]/90 transition-colors z-50"
+            className="fixed bottom-8 right-8 p-3 rounded-full bg-[hsl(var(--primary))] text-white shadow-lg shadow-[hsl(var(--primary))]/30 hover:bg-[hsl(var(--primary))]/90 transition-all z-30"
+            aria-label="Kembali ke atas"
           >
             <ChevronUp className="w-5 h-5" />
           </motion.button>

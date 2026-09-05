@@ -3,67 +3,20 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Clock, User, ArrowUpRight, BookOpen } from 'lucide-react';
+import { Clock, User, ArrowUpRight } from 'lucide-react';
 import { useSiteData } from '../contexts/SiteDataContext';
 import { formatImageUrl } from '../lib/utils';
-
-function ArticlesSkeleton() {
-  return (
-    <section id="artikel" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--muted))]/30 to-transparent">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <div className="skeleton h-4 w-36 mx-auto mb-4" />
-          <div className="skeleton h-12 w-56 mx-auto mb-4" />
-          <div className="skeleton h-4 w-80 max-w-full mx-auto" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Featured skeleton */}
-          <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-3xl overflow-hidden">
-            <div className="skeleton h-64 w-full rounded-none" />
-            <div className="p-5 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="skeleton h-3 w-20" />
-                  <div className="skeleton h-3 w-24" />
-                </div>
-                <div className="skeleton w-10 h-10 rounded-full" />
-              </div>
-            </div>
-          </div>
-          {/* Side cards skeleton */}
-          <div className="flex flex-col gap-4">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="flex gap-4 bg-[hsl(var(--card))] border border-[hsl(var(--border))]/60 rounded-2xl p-4 flex-1">
-                <div className="skeleton w-24 sm:w-28 aspect-square flex-shrink-0 rounded-xl" />
-                <div className="flex flex-col justify-between flex-1">
-                  <div>
-                    <div className="skeleton h-4 w-16 rounded mb-2" />
-                    <div className="skeleton h-5 w-full mb-1.5" />
-                    <div className="skeleton h-3 w-3/4" />
-                  </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <div className="skeleton h-3 w-16" />
-                    <div className="skeleton h-3 w-20" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 export function Articles() {
   const { data } = useSiteData();
 
-  if (!data) return <ArticlesSkeleton />;
+  if (!data) return null;
 
   const articlesData = data.articles || [];
-
   const featuredArticle = articlesData[0];
   const otherArticles = articlesData.slice(1, 4); // Only show 3 more articles (total 4)
+
+  if (articlesData.length === 0 || !featuredArticle) return null;
 
   return (
     <section id="artikel" className="relative py-24 md:py-32 bg-gradient-to-b from-transparent via-[hsl(var(--muted))]/30 to-transparent">
@@ -87,10 +40,7 @@ export function Articles() {
           </p>
         </motion.div>
 
-        {/* Content */}
-        {articlesData.length > 0 && featuredArticle ? (
-          <>
-            {/* Articles Grid - Equal height columns */}
+        {/* Articles Grid - Equal height columns */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Featured Article - Stretches to match right column */}
               <Link href={`/artikel/${featuredArticle.id}`}>
@@ -223,25 +173,6 @@ export function Articles() {
               <ArrowUpRight className="w-4 h-4" />
               Lihat Semua Artikel
             </Link>
-          </motion.div>
-        )}
-          </>
-        ) : (
-          /* Empty State */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16"
-          >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center">
-              <BookOpen className="w-10 h-10 text-[hsl(var(--muted-foreground))]" />
-            </div>
-            <h3 className="text-xl font-semibold text-[hsl(var(--foreground))] mb-2">
-              Belum Ada Artikel
-            </h3>
-            <p className="text-[hsl(var(--muted-foreground))] text-sm max-w-md mx-auto">
-              Saat ini belum ada artikel yang tersedia. Silakan kunjungi lagi nanti.
-            </p>
           </motion.div>
         )}
       </div>

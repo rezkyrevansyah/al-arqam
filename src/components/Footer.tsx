@@ -30,6 +30,7 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 };
 
 const NAV_MENU = [
+  { label: 'Kegiatan', href: '/kegiatan' },
   { label: 'Agenda', href: '/#agenda' },
   { label: 'Artikel', href: '/#artikel' },
   { label: 'Galeri', href: '/#galeri' },
@@ -105,6 +106,20 @@ export function Footer() {
   const mapsUrl = footerData?.mapsUrl || '';
   const socials = footerData?.socials || [];
 
+  const navMenu = NAV_MENU.filter((item) => {
+    if (item.href === '/#tentang' && (!data?.board || data.board.length === 0)) {
+      return false;
+    }
+    if (
+      item.href === '/#donasi' &&
+      !data?.donation?.bankAccountNumber?.trim() &&
+      !data?.donation?.qrisImageUrl?.trim()
+    ) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <footer className="relative bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] overflow-hidden">
       <div className="absolute inset-0 islamic-pattern opacity-[0.05]" />
@@ -174,7 +189,7 @@ export function Footer() {
           >
             <h4 className="font-display font-semibold text-base mb-4">Menu</h4>
             <div className="space-y-2.5">
-              {NAV_MENU.map((item) => (
+              {navMenu.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
